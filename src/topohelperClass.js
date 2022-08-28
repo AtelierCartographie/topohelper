@@ -7,6 +7,7 @@ import { innerlines } from './innerlines.js'
 import { outerlines } from './outerlines.js'
 import { merge } from './merge.js'
 import { filter } from './filter.js'
+import { view } from './view.js'
 
 
 export class topohelper {
@@ -56,6 +57,10 @@ export class topohelper {
       this.topojson = filter(this.topojson, options)
       this.method.push({filter: options})
       return this
+    }
+
+    view(options = {}) {
+      return view(this.topojson, options)
     }
   
     // centroids(options = {}) {
