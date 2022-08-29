@@ -25,8 +25,8 @@ export class topohelper {
         return fromGeojson(geojson)
     }
   
-    toGeojson() {
-      return toGeojson(this.topojson)
+    toGeojson(options = {}) {
+      return toGeojson(this.topojson, options)
     }
   
     lines(options = {}) {

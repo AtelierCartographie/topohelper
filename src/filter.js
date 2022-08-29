@@ -1,16 +1,25 @@
 import { filter as topoFilter } from 'topojson-simplify'
+import { toGeojson } from './format/toGeojson.js'
+import { toTopojson } from './helpers/toTopojson.js'
 
 export function filter(topo, options = {}) {
-  const {object, condition, geojson} = options
-  const obj = object ? object : Object.keys(topo.objects)[0]
+  let {object, condition, geojson, addLayer, name} = options
+  object = object ?? Object.keys(topo.objects)[0]
+  name = name ?? "filter"
 
 //   const copy = JSON.parse(JSON.stringify(topo)) // Deep copy
-  const subset = topo.objects[obj].geometries.filter(condition ? condition : d => d)
-  topo.objects[obj].geometries = subset
+  const subset = topo.objects[object].geometries.filter(condition ? condition : d => d)
 
-  const filtered = topoFilter(topo)
+  let output_topojson
+
+  if (addLayer) {
+    output_topojson = toTopojson(topo, subset, {name, addLayer})
+  } else {
+    topo.objects[object].geometries = subset
+    output_topojson = topoFilter(topo)
+  }
 
   return geojson
-    ? toGeojson(filtered)
-    : filtered
+    ? toGeojson(output_topojson)
+    : output_topojson
 }

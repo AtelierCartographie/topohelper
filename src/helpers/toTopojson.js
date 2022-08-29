@@ -1,23 +1,31 @@
 import { filter } from 'topojson-simplify'
 
-// TODO
-// + renommer l'objet 'geometries' en fonction de la méthode appliquée. Utiliser le nom de la méthode.
-
 // Fonction interne pour conserver le format topojson dans certaines opérations
-export function toTopojson(topo, geometries, collection = false) {
+// et ajouter le résultat d'opérations sous forme de couche dans topojson.objects
+export function toTopojson(topo, geometries, options = {}) {
+  let {name, collection, addLayer} = options
+  collection = collection ?? false
+  addLayer = addLayer ?? true
+
+  const geom = (collection)
+    ? {
+        [name]: {
+          type: "GeometryCollection",
+          geometries
+        }
+      }
+    : { [name]: geometries }
+
   const obj = {
     type: "topology",
     transform: topo.transform,
     arcs: topo.arcs,
-    objects: (collection)
-      ? {
-          group: {
-            type: "GeometryCollection",
-            geometries
-          }
+    objects: (addLayer)
+      ? {...topo.objects,
+         ...geom
         }
-      : { geometries }
+      : { ...geom }
   }
 
-  return filter(obj)
+  return (addLayer) ? obj : filter(obj)
 }

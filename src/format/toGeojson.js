@@ -1,11 +1,12 @@
 import { feature } from 'topojson-client'
 
-export function toGeojson(topo, id, options = {}) {
-  const {layer} = options
+export function toGeojson(topo, options = {}) {
+  const {id, layer} = options
 
+  // Specific to the view function who can also accept geojson as input
   // If already a geojson, just add a name property
   if (topo.type !== "Topology") {
-    topo.name = id ? id + 1 : 1
+    topo.name = id ?? 0
     return topo
   } 
   

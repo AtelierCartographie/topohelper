@@ -1,14 +1,18 @@
 import { mesh, meshArcs } from 'topojson-client'
+import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './helpers/toTopojson.js'
 
 export function lines(topo, options = {}) {
-  const {object, geojson} = options
-  const obj = object ? object : Object.keys(topo.objects)[0]
+  let {object, geojson, addLayer, name} = options
+  object = object ?? Object.keys(topo.objects)[0]
+  name = name ?? "lines"
+
   const fn = geojson ? mesh : meshArcs
   
-  const mesh = fn(topo, topo.objects[obj])
+  const output = fn(topo, topo.objects[object])
+  const output_topojson = toTopojson(topo, output, {name, addLayer})
 
   return geojson
-    ? mesh
-    : toTopojson(topo, mesh)
+    ? toGeojson(output_topojson)
+    : output_topojson
 }
