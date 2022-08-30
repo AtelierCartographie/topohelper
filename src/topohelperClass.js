@@ -30,31 +30,31 @@ export class topohelper {
     }
   
     lines(options = {}) {
-      this.topojson = lines(this.topojson, options)
+      this.topojson = lines(this.topojson, {...options, chain: true})
       this.method.push({lines: options})
       return this
     }
   
     outerlines(options = {}) {
-      this.topojson = outerlines(this.topojson, options)
+      this.topojson = outerlines(this.topojson, {...options, chain: true})
       this.method.push({outerlines: options})
       return this
     }
   
     innerlines(options = {}) {
-      this.topojson = innerlines(this.topojson, options)
+      this.topojson = innerlines(this.topojson, {...options, chain: true})
       this.method.push({innerlines: options})
       return this
     }
   
     merge(options = {}) {
-      this.topojson = merge(this.topojson, options)
+      this.topojson = merge(this.topojson, {...options, chain: true})
       this.method.push({merge: options})
       return this
     }
   
     filter(options = {}) {
-      this.topojson = filter(this.topojson, options)
+      this.topojson = filter(this.topojson, {...options, chain: true})
       this.method.push({filter: options})
       return this
     }
