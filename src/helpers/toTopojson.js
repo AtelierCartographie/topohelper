@@ -17,7 +17,7 @@ export function toTopojson(topo, geometries, options = {}) {
     : { [name]: geometries }
 
   const obj = {
-    type: "topology",
+    type: "Topology",
     transform: topo.transform,
     arcs: topo.arcs,
     objects: (addLayer)
