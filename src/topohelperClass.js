@@ -7,6 +7,7 @@ import { innerlines } from './innerlines.js'
 import { outerlines } from './outerlines.js'
 import { merge } from './merge.js'
 import { filter } from './filter.js'
+import { project } from './project.js'
 import { view } from './view.js'
 
 
@@ -56,6 +57,12 @@ export class topohelper {
     filter(options = {}) {
       this.topojson = filter(this.topojson, {...options, chain: true})
       this.method.push({filter: options})
+      return this
+    }
+
+    project(options = {}) {
+      this.topojson = project(this.topojson, {...options, chain: true})
+      this.method.push({project: options})
       return this
     }
 
