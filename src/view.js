@@ -14,7 +14,7 @@ export function view(geofile, options = {}) {
     if (!Array.isArray(geofile)) geofile = [geofile] 
   
     // geofile(s) convert into geojson
-    const files = geofile.map( (d,i) => toGeojson(d, {id: i, layer: layer}) ).flat()
+    const files = geofile.map( (d,i) => toGeojson(d, {name: i, layer: layer}) ).flat()
 
     // (unique) bbox of geofile(s)
     const bbox = mergeBbox( geofile.map(f => getBbox(f)) )

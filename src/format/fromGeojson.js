@@ -1,8 +1,13 @@
 import { topology } from 'topojson-server'
 import { topohelper } from '../topohelperClass.js'
 
-// input: one geojson or an array of geojson
-// output : one topojson with layer, each geojson input = one topojson.objects
+/**
+ * Instantiate a topohelper class from a geojson or an array of geojson
+ * Before inputs are convert to a single topojson
+ *
+ * @param {GeoJSON|GeoJSON[]} topo - A valid geojson or an array of geojson
+ * @returns {topohelper}
+ */
 export function fromGeojson(geojson) {
     const topo = topology(geojson)
     return new topohelper(topo)

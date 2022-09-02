@@ -1,12 +1,21 @@
 import { feature } from 'topojson-client'
 
+/**
+ * Convert topojson to geojson
+ *
+ * @param {TopoJSON|GeoJSON} topo - A valid topojson object
+ * @param {Object} options - optional parameters
+ * @param {String} options.name - if geojson as input add a name property to it
+ * @param {String|String[]|Number|Number[]} options.layer - target layers (name or index). If omit use all layers. Ex: {layer: "lyr"} | {layer: ["lyr", 1]}
+ * @returns {GeoJSON}
+ */
 export function toGeojson(topo, options = {}) {
-  const {id, layer} = options
+  const {name, layer} = options
 
-  // Specific to the view function who can also accept geojson as input
+  // Specific to the view() function who can also accept geojson as input
   // If already a geojson, just add a name property
   if (topo.type !== "Topology") {
-    topo.name = id ?? 0
+    topo.name = name ?? 0
     return topo
   } 
   
@@ -44,5 +53,4 @@ export function toGeojson(topo, options = {}) {
   return Array.isArray(lyr)
     ? lyr.map(o => convert(o))
     : convert(lyr)
-  
 }

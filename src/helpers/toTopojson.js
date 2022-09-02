@@ -1,7 +1,20 @@
 import { filter } from 'topojson-simplify'
 
-// Fonction interne pour conserver le format topojson dans certaines opérations
-// et ajouter le résultat d'opérations sous forme de couche dans topojson.objects
+/**
+ * Inject geometries to a topojson as a layer.
+ * Geometries can be a single geometry (Point, MultiPoint, LineString...) or an array of geometries.
+ * Geometries are injected inside topojson.objects as a new layer (other layers stay as is)
+ * or as a replacement of all existing layers.
+ *
+ * @param {TopoJSON} topo - A valid topojson object
+ * @param {Object|Object[]} geometries
+ * @param {Object} options - optional parameters except for name
+ * @param {String} options.name - name of the new layer
+ * @param {Boolean} options.collection - true : inject geometries inside a "GeometryCollection"
+ * @param {Boolean} options.addLayer - true add a layer to existing ones
+ * @returns {TopoJSON}
+ */
+
 export function toTopojson(topo, geometries, options = {}) {
   let {name, collection, addLayer} = options
   collection = collection ?? false
@@ -16,16 +29,14 @@ export function toTopojson(topo, geometries, options = {}) {
       }
     : { [name]: geometries }
 
-  const obj = {
-    type: "Topology",
-    transform: topo.transform,
-    arcs: topo.arcs,
+  const {objects, ...rest} = topo
+  const output = {
+    ...rest,
     objects: (addLayer)
-      ? {...topo.objects,
-         ...geom
-        }
-      : { ...geom }
+      ? {...objects,
+         ...geom}
+      : {...geom}
   }
 
-  return (addLayer) ? obj : filter(obj)
+  return (addLayer) ? output : filter(output)
 }
