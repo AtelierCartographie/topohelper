@@ -29,7 +29,6 @@ export function filter(topo, options = {}) {
   // No geojson export in chain mode
   if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
 
-//   const copy = JSON.parse(JSON.stringify(topo)) // Deep copy
   const subset = topo.objects[layer].geometries.filter(condition ? condition : d => d)
 
   let output_topojson
@@ -37,8 +36,9 @@ export function filter(topo, options = {}) {
   if (addLayer) {
     output_topojson = toTopojson(topo, subset, {name, addLayer, collection: true})
   } else {
-    topo.objects[layer].geometries = subset
-    output_topojson = topoFilter(topo)
+    const copy = JSON.parse(JSON.stringify(topo)) // Deep copy, for single function mode
+    copy.objects[layer].geometries = subset
+    output_topojson = topoFilter(copy)
   }
 
   // Update topojson.lastLayer property
