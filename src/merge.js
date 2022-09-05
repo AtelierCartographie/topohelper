@@ -1,7 +1,7 @@
 import { mergeArcs as topoMergeArcs } from 'topojson-client'
 import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './helpers/toTopojson.js'
-import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
+import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
 /**
  * Union an array of Polygon|MultiPolygon
@@ -20,11 +20,8 @@ import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
  */
 export function merge(topo, options = {}) {
   let {chain, layer, group, name, addLayer, geojson} = options
-  layer = layer 
-            ? layer
-            : chain
-              ? getlastLayerName(topo)
-              : Object.keys(topo.objects)[0]
+
+  layer = getLayerName(topo, layer, chain)
   name = name ?? group ? `merge_groupBy_${group}` : "merge"
 
   // No geojson export in chain mode

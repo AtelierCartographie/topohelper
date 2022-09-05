@@ -1,7 +1,7 @@
 import { filter as topoFilter } from 'topojson-simplify'
 import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './helpers/toTopojson.js'
-import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
+import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
 /**
  * Filter a topojson
@@ -18,11 +18,8 @@ import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
  */
 export function filter(topo, options = {}) {
   let {chain, layer, condition, name, addLayer, geojson} = options
-  layer = layer 
-            ? layer
-            : chain
-              ? getlastLayerName(topo)
-              : Object.keys(topo.objects)[0]
+  
+  layer = getLayerName(topo, layer, chain)
   name = name ?? "filter"
   addLayer = addLayer ?? true
 

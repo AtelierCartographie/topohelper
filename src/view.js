@@ -1,14 +1,18 @@
-import { toGeojson } from './format/toGeojson.js'
-import { getBbox, mergeBbox, bboxToPolygon } from './helpers/bbox'
-import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
 import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
 import { select } from 'd3-selection'
+import { toGeojson } from './format/toGeojson.js'
+import { getBbox, mergeBbox, bboxToPolygon } from './helpers/bbox'
+import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
+import { getlastLayerName } from './helpers/layers.js'
+
 
 export function view(geofile, options = {}) {
-    const {layer, zoom, size} = options
+    let {chain, layer, zoom, size} = options
     
     const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth]
+
+    if (chain && !layer) layer = getlastLayerName(geofile)
   
     // convert geofile to array
     if (!Array.isArray(geofile)) geofile = [geofile] 

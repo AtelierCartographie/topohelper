@@ -1,7 +1,7 @@
 import { meshArcs } from 'topojson-client'
 import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './helpers/toTopojson.js'
-import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
+import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
 /**
  * Remove share arcs of adjacent Polygon|MultiPolygon
@@ -18,11 +18,8 @@ import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
  */
 export function outerlines (topo, options = {}) {
   let {chain, layer, geojson, addLayer, name} = options
-  layer = layer 
-            ? layer
-            : chain
-              ? getlastLayerName(topo)
-              : Object.keys(topo.objects)[0]
+  
+  layer = getLayerName(topo, layer, chain)
   name = name ?? "outerlines"
 
   // No geojson export in chain mode

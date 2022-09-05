@@ -67,7 +67,7 @@ export class topohelper {
     }
 
     view(options = {}) {
-      return view(this.topojson, options)
+      return view(this.topojson, {...options, chain: true})
     }
   
     // centroids(options = {}) {

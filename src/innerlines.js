@@ -1,7 +1,7 @@
 import { meshArcs } from 'topojson-client'
 import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './helpers/toTopojson.js'
-import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
+import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
 /**
  * Keep share arcs of adjacent Polygon|MultiPolygon
@@ -12,7 +12,7 @@ import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
  * @param {Object} options - optional parameters except for name
  * @param {Boolean} options.chain - intern option to know if function is called in chained mode or single function mode
  * @param {String|Number} options.layer - a single target layer (name or index)
- * @param {String} options.group - group by a data properties before
+ * @param {String} options.group - group by a data property before
  * @param {String} options.name - name of the new layer
  * @param {Boolean} options.addLayer - true add a layer to existing ones
  * @param {Boolean} options.geojson - true convert output from topojson to geojson (only in single function mode)
@@ -20,11 +20,8 @@ import { addLastLayerName, getlastLayerName } from './helpers/lastLayer.js'
  */
 export function innerlines (topo, options = {}) {
   let {chain, layer, group, addLayer, name, geojson} = options
-  layer = layer 
-            ? layer
-            : chain
-              ? getlastLayerName(topo)
-              : Object.keys(topo.objects)[0]
+
+  layer = getLayerName(topo, layer, chain)
   name = name ?? "innerlines"
 
   // No geojson export in chain mode
