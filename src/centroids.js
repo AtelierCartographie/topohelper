@@ -28,14 +28,20 @@ export const centroids = (topo, options = {}) => {
     // No geojson export in chain mode
     if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
   
-    // TODO
-    // case without "GeometryCollection" and with a direct single geometry
-    const centroids = topo.objects[layer].geometries
-        .filter(geom => ["Polygon", "MultiPolygon"].includes(geom.type))
-        .map(geom => ({
-            type: "Point",
-            properties: {...geom.properties},
-            coordinates: getCentroid(topo, geom, better)}))
+    // Handle GeometryCollection and single geometry differently
+    const lyr = topo.objects[layer]
+    const centroids = lyr.hasOwnProperty("geometries")
+      ? topo.objects[layer].geometries
+          .filter(geom => ["Polygon", "MultiPolygon"].includes(geom.type))
+          .map(geom => ({
+              type: "Point",
+              properties: {...geom.properties},
+              coordinates: getCentroid(topo, geom, better)}))
+      : {
+        type: "Point",
+        properties: {...lyr.properties},
+        coordinates: getCentroid(topo, lyr, better)
+        }
       
 
     if (centroids.length === 0) throw new Error(`Can't calcul centroids because no Polygon|MultiPolygon in the layer ${layer}`)
@@ -72,13 +78,8 @@ const getCentroid = (topo, geometry, better) => {
                                                               .reverse()  // important to reconstruct geometry
                                                 )
 
-    // FAIRE UN SWITCH POUR GÉRER TOUTES LES GÉOMÉTRIES
+    // Polygon and MultiPolygon handle differently
     switch (geometry.type) {
-        case 'Point':
-        case 'MultiPoint':
-        case 'LineString':
-        case 'MultiLineString':
-            break
         case 'Polygon':
             polyCoords = geometry.arcs.map(arcs => getArcsTransform(arcs).flat())
             if (!better) vertices = polyCoords.flat()
@@ -97,7 +98,7 @@ const getCentroid = (topo, geometry, better) => {
     }
   
 
-    // Pole of inaccessibility with polylabel
+    // Option to force use of pole of inaccessibility with polylabel
     if (better) return unT(polylabel(polyCoords, 1.0))
 
 
@@ -120,13 +121,6 @@ const getCentroid = (topo, geometry, better) => {
   }
 
 
-  const getAreaFromBbox = (bbox) => {
-    const [x0, y0, x1, y1] = bbox
-    // if planar
-    const area = (x1 - x0) * (y1 - y0)
-    return area
-  }
-
   // Get bbox from an array of coordinates
   const getBboxFromCoordinates = (coords) => {
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity
@@ -144,11 +138,15 @@ const getCentroid = (topo, geometry, better) => {
     return [x0, y0, x1, y1]
   }
 
+  const getAreaFromBbox = (bbox) => {
+    const [x0, y0, x1, y1] = bbox
+    // if planar
+    const area = (x1 - x0) * (y1 - y0)
+    return area
+  }
+
+  // Get the center of a bbox
   const centerOfBbox = (bbox) => {
     const [x0, y0, x1, y1] = bbox
     return [(x0 + x1) / 2, (y0 + y1) / 2]
-  }
-
-  const pointInPolygon = (poly) => {
-
   }
