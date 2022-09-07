@@ -1,12 +1,12 @@
 import { from } from './format/fromTopojson.js'
 import { fromGeojson } from './format/fromGeojson.js'
 import { toGeojson } from './format/toGeojson.js'
-import { toTopojson } from './helpers/toTopojson.js'
 import { lines } from './lines.js'
 import { innerlines } from './innerlines.js'
 import { outerlines } from './outerlines.js'
 import { merge } from './merge.js'
 import { filter } from './filter.js'
+import { centroids } from './centroids.js'
 import { project } from './project.js'
 import { view } from './view.js'
 
@@ -60,6 +60,12 @@ export class topohelper {
       return this
     }
 
+    centroids(options = {}) {
+      this.topojson = centroids(this.topojson, {...options, chain: true})
+      this.method.push({centroids: options})
+      return this
+    }
+
     project(options = {}) {
       this.topojson = project(this.topojson, {...options, chain: true})
       this.method.push({project: options})
@@ -69,10 +75,5 @@ export class topohelper {
     view(options = {}) {
       return view(this.topojson, {...options, chain: true})
     }
-  
-    // centroids(options = {}) {
-    //   return centroids(this.topojson, options)
-    // }
-  
     
   }

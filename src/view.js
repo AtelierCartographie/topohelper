@@ -6,13 +6,25 @@ import { getBbox, mergeBbox, bboxToPolygon } from './helpers/bbox'
 import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
 import { getlastLayerName } from './helpers/layers.js'
 
-
+/**
+ * TODO
+ * 
+ *
+ * @param {TopoJSON|GeoJSON} topo - A topojson object in chain mode or topojson|geojson[] in single function mode
+ * @param {Object} options - optional parameters except for name
+ * @param {Boolean} options.chain - intern option to know if function is called in chained mode or single function mode
+ * @param {String|Number} options.layer - a single target layer (name or index). If "last" + chain mode, render the last layer created. If omit or "all" render all layers.
+ * @param {Boolean} options.zoom - true add a d3 zoom
+ * @param {Number[]} options.size - canvas dimensions as [width, height]
+ * @returns {HTMLCanvasElement}
+ */
 export function view(geofile, options = {}) {
     let {chain, layer, zoom, size} = options
     
     const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth]
 
-    if (chain && !layer) layer = getlastLayerName(geofile)
+    // In chain mode, always render the last layer created
+    if (chain && layer === "last") layer = getlastLayerName(geofile, Object.keys(geofile.objects))
   
     // convert geofile to array
     if (!Array.isArray(geofile)) geofile = [geofile] 

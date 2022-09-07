@@ -6,7 +6,7 @@ import { feature } from 'topojson-client'
  * @param {TopoJSON|GeoJSON} topo - A valid topojson object
  * @param {Object} options - optional parameters
  * @param {String} options.name - if geojson as input add a name property to it
- * @param {String|String[]|Number|Number[]} options.layer - target layers (name or index). If omit use all layers. Ex: {layer: "lyr"} | {layer: ["lyr", 1]}
+ * @param {String|String[]|Number|Number[]} options.layer - target layers (name or index). If omit or "all" use all layers. Ex: {layer: "lyr"} | {layer: ["lyr", 1]}
  * @returns {GeoJSON}
  */
 export function toGeojson(topo, options = {}) {
@@ -27,7 +27,7 @@ export function toGeojson(topo, options = {}) {
   const getLyrName = (lyrKey) => isNaN(lyrKey) ? lyrKey : allLyr[lyrKey]
 
   // Get layer list to convert
-  const lyr = layer === undefined
+  const lyr = layer === undefined || layer === "all"
     // if multiple layers and no layer option, convert all layers
     ? cleanAllLyr(allLyr)
     // if multiple layers and layer option, convert selected layers
