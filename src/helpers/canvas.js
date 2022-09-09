@@ -21,12 +21,12 @@ export function newCanvasContext2D(width, height, options = {}) {
 
 // Canvas render of geojson geometries
 // If FeatureCollection or GeometryCollection, iterate over each geometry object
-export function geometryRender(geojson, context, geoPath, lineWidth = 0.5) {
+export function geometryRender(geojson, context, geoPath, color, lineWidth = 0.5) {
     // TEST GEOMETRY TYPE TO ADAPT RENDER
     switch (geojson.type) {
       case 'Point':
       case 'MultiPoint':
-        context.fillStyle = "#333"
+        context.fillStyle = color
         context.beginPath()
         geoPath(geojson)
         context.fill()
@@ -36,7 +36,7 @@ export function geometryRender(geojson, context, geoPath, lineWidth = 0.5) {
       case 'MultiLineString':
         context.lineCap = "round"
         context.lineJoin = "round"
-        context.strokeStyle = "#333"
+        context.strokeStyle = color
         context.lineWidth = lineWidth
         context.beginPath()
         geoPath(geojson)
@@ -47,7 +47,7 @@ export function geometryRender(geojson, context, geoPath, lineWidth = 0.5) {
       case 'MultiPolygon':
         context.lineCap = "round"
         context.lineJoin = "round"
-        context.strokeStyle = "#333"
+        context.strokeStyle = color
         context.lineWidth = lineWidth
         context.beginPath()
         geoPath(geojson)
@@ -55,11 +55,11 @@ export function geometryRender(geojson, context, geoPath, lineWidth = 0.5) {
         break
   
       case 'GeometryCollection':
-        geojson.geometries.forEach(obj => geometryRender(obj, context, geoPath))
+        geojson.geometries.forEach(obj => geometryRender(obj, context, geoPath, color))
         break
   
       case 'FeatureCollection':
-        geojson.features.forEach(obj => geometryRender(obj.geometry, context, geoPath))
+        geojson.features.forEach(obj => geometryRender(obj.geometry, context, geoPath, color))
         break
   
       default:

@@ -82,7 +82,7 @@ export function view(geofile, options = {}) {
             // ajustement pour que l'épaisseur reste en réalité constante visuellement
             const lineWidth = 0.5 / k
             
-            geometryRender(file, context, geoPath.pointRadius(1 / k), lineWidth)
+            geometryRender(file, context, geoPath.pointRadius(1 / k), file.color, lineWidth)
         
             context.restore()
         }
@@ -96,11 +96,17 @@ export function view(geofile, options = {}) {
     function addLayer(node, file) {
       const ctx = newCanvasContext2D(w,h, {id: file.name, layered: true})
       const geoPath = d3geoPath(proj, ctx).pointRadius(1)
-      geometryRender(file, ctx, geoPath)
+      geometryRender(file, ctx, geoPath, file.color)
       node.append(ctx.canvas)
     }
   
-    files.forEach(file => addLayer(geoViewer, file))
+    // couleurs différentes par calques, réutilisées si plus de 6 calques
+    const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
+
+    files.forEach((file,i) => {
+      file.color = colors[i%6]
+      addLayer(geoViewer, file)
+    })
   
     if (zoom) addZoom(files)
   
