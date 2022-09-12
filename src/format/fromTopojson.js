@@ -10,6 +10,7 @@ import { topohelper } from '../topohelperClass.js'
 export function from(topo) {
     if (Array.isArray(topo)) throw new Error("Expect only a single topojson.")
 
-    const copy = JSON.parse(JSON.stringify(topo))
+    // const copy = JSON.parse(JSON.stringify(topo))
+    const copy = structuredClone(topo)
     return new topohelper(copy)
 }
