@@ -28,20 +28,20 @@ export function filter(topo, options = {}) {
 
   const subset = topo.objects[layer].geometries.filter(condition ? condition : d => d)
 
-  let output_topojson
+  let output
 
   if (addLayer) {
-    output_topojson = toTopojson(topo, subset, {name, addLayer, collection: true})
+    output = toTopojson(topo, subset, {name, addLayer, collection: true})
   } else {
     const copy = JSON.parse(JSON.stringify(topo)) // Deep copy, for single function mode
     copy.objects[layer].geometries = subset
-    output_topojson = topoFilter(copy)
+    output = topoFilter(copy)
   }
 
   // Update topojson.lastLayer property
-  addLastLayerName(output_topojson, name)
+  addLastLayerName(output, name)
 
   return geojson
-    ? toGeojson(output_topojson)
-    : output_topojson
+    ? toGeojson(output)
+    : output
 }

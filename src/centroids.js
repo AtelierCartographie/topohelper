@@ -45,14 +45,14 @@ export const centroids = (topo, options = {}) => {
       
 
     if (centroids.length === 0) throw new Error(`Can't calcul centroids because no Polygon|MultiPolygon in the layer ${layer}`)
-    const output_topojson = toTopojson(topo, centroids, {name, collection: true, addLayer})
+    const output = toTopojson(topo, centroids, {name, collection: true, addLayer})
 
     // Update topojson.lastLayer property
-    addLastLayerName(output_topojson, name)
+    addLastLayerName(output, name)
 
     return geojson
-        ? toGeojson(output_topojson)
-        : output_topojson
+        ? toGeojson(output)
+        : output
   }
 
 

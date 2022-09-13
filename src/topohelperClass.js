@@ -1,4 +1,4 @@
-import { from } from './format/fromTopojson.js'
+import { fromTopojson } from './format/fromTopojson.js'
 import { fromGeojson } from './format/fromGeojson.js'
 import { toGeojson } from './format/toGeojson.js'
 import { lines } from './lines.js'
@@ -7,6 +7,7 @@ import { outerlines } from './outerlines.js'
 import { merge } from './merge.js'
 import { filter } from './filter.js'
 import { centroids } from './centroids.js'
+import { simplify } from './simplify.js'
 import { project } from './project.js'
 import { view } from './view.js'
 
@@ -19,11 +20,11 @@ export class topohelper {
 
     // Instantiate a topohelper class from a topojson or geojson
     static from(topo) {
-        return from(topo)
+        return fromTopojson(topo)
       }
     
-    static fromGeojson(geojson) {
-        return fromGeojson(geojson)
+    static fromGeojson(geojson, options = {}) {
+        return fromGeojson(geojson, options)
     }
   
     toGeojson(options = {}) {
@@ -63,6 +64,12 @@ export class topohelper {
     centroids(options = {}) {
       this.topojson = centroids(this.topojson, {...options, chain: true})
       this.method.push({centroids: options})
+      return this
+    }
+
+    simplify(options = {}) {
+      this.topojson = simplify(this.topojson, {...options, chain: true})
+      this.method.push({simplify: options})
       return this
     }
 

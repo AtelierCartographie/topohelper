@@ -25,13 +25,13 @@ export function outerlines (topo, options = {}) {
   // No geojson export in chain mode
   if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
   
-  const output = meshArcs(topo, topo.objects[layer], (a, b) => a === b)
-  const output_topojson = toTopojson(topo, output, {name, addLayer})
+  const geometries = meshArcs(topo, topo.objects[layer], (a, b) => a === b)
+  const output = toTopojson(topo, geometries, {name, addLayer})
 
   // Update topojson.lastLayer property
-  addLastLayerName(output_topojson, name)
+  addLastLayerName(output, name)
   
   return geojson
-    ? toGeojson(output_topojson)
-    : output_topojson
+    ? toGeojson(output)
+    : output
 }

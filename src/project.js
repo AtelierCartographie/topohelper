@@ -4,6 +4,9 @@ import {getProj} from './helpers/projections'
 export function project (topo, options = {}) {
     let {chain, proj, fromProj, geojson} = options
 
+    // No geojson export in chain mode
+    if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
+
     if (!proj) {
         const e = new Error("Missing arguments options.proj")
         return e.message

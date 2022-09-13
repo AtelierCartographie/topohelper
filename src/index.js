@@ -1,5 +1,5 @@
 // Format
-export { from } from './format/fromTopojson.js'
+export { fromTopojson as from } from './format/fromTopojson.js'
 export { fromGeojson } from './format/fromGeojson.js'
 export { toGeojson } from './format/toGeojson.js'
 
@@ -10,6 +10,7 @@ export { outerlines } from './outerlines.js'
 export { merge } from './merge.js'
 export { filter } from './filter.js'
 export { centroids } from './centroids.js'
+export { simplify } from './simplify.js'
 export { project } from './project.js'
 export { view } from './view.js'
 

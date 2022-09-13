@@ -28,15 +28,15 @@ export function merge(topo, options = {}) {
   if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
   
   if (!group) {
-    const output = topoMergeArcs(topo, topo.objects[layer].geometries)
-    const output_topojson = toTopojson(topo, output, {name, addLayer})
+    const geometries = topoMergeArcs(topo, topo.objects[layer].geometries)
+    const output = toTopojson(topo, geometries, {name, addLayer})
 
     // Update topojson.lastLayer property
-    addLastLayerName(output_topojson, name)
+    addLastLayerName(output, name)
 
     return geojson
-      ? toGeojson(output_topojson)
-      : output_topojson
+      ? toGeojson(output)
+      : output
   } 
 
   // GroupBy
@@ -54,13 +54,13 @@ export function merge(topo, options = {}) {
   
           .map(d => ({...d[1], properties: {group: d[0]}} ))
 
-  const groupBy_features_topojson = toTopojson(topo, groupBy_features, {name, collection: true, addLayer})
+  const output = toTopojson(topo, groupBy_features, {name, collection: true, addLayer})
 
   // Update topojson.lastLayer property
-  addLastLayerName(groupBy_features_topojson, name)
+  addLastLayerName(output, name)
 
   // return geojson or topojson
   return geojson
-    ? toGeojson(groupBy_features_topojson)
-    : groupBy_features_topojson
+    ? toGeojson(output)
+    : output
 }
