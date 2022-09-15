@@ -1,5 +1,4 @@
 import { presimplify, quantile, simplify as topoSimplify, sphericalTriangleArea } from "topojson-simplify"
-import { quantize } from "topojson-client"
 import { toGeojson } from "./format/toGeojson"
 import { isPlanar } from "./helpers/projections"
 
@@ -16,26 +15,21 @@ import { isPlanar } from "./helpers/projections"
  * @returns {TopoJSON|GeoJSON}
  */
 export function simplify (topo, options = {}) {
-    let {chain, level, quantization, geojson} = options
-    level = level ?? 0.5
-    quantization = quantization ?? 1e4
+  let {chain, level, quantization, geojson} = options
+  level = level ?? 0.5
+  quantization = quantization ?? 1e4
 
-    // No geojson export in chain mode
-    if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
+  // No geojson export in chain mode
+  if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
 
 
 
-    let topoS = presimplify(topo, isPlanar(topo) ? undefined : sphericalTriangleArea);
-    const min_weight = quantile(topoS, level);
-    topoS = topoSimplify(topoS, min_weight);
-    topoS = quantize(topoS, quantization)
+  let topoS = presimplify(topo, isPlanar(topo) ? undefined : sphericalTriangleArea)
+  const min_weight = quantile(topoS, level)
+  topoS = topoSimplify(topoS, min_weight)
 
-    const {arcs, transform, ...rest} = topo
-    const output = {
-        ...rest,
-        transform: topoS.transform,
-        arcs: topoS.arcs
-    }
+  const {arcs, ...rest} = topo
+  const output = {arcs: topoS.arcs, ...rest}
 
   return geojson
     ? toGeojson(output)

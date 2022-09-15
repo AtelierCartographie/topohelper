@@ -1,6 +1,6 @@
 import { meshArcs } from 'topojson-client'
 import { toGeojson } from './format/toGeojson.js'
-import { toTopojson } from './helpers/toTopojson.js'
+import { reconstructTopojson } from './helpers/reconstructTopojson.js'
 import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
 /**
@@ -19,7 +19,7 @@ import { addLastLayerName, getLayerName } from './helpers/layers.js'
 export function lines(topo, options = {}) {
   let {chain, layer, addLayer, name, geojson} = options
   
-  layer = getLayerName(topo, layer, chain)
+  layer = getLayerName(topo, layer, {chain})
   name = name ?? "lines"
 
   // No geojson export in chain mode
@@ -28,7 +28,7 @@ export function lines(topo, options = {}) {
   const geometries = layer === "all" 
                     ? meshArcs(topo)                        // mesh of all the topology
                     : meshArcs(topo, topo.objects[layer])   // mesh of a single object
-  const output = toTopojson(topo, geometries, {name, addLayer})
+  const output = reconstructTopojson(topo, geometries, {name, addLayer})
 
   // Update topojson.lastLayer property
   addLastLayerName(output, name)

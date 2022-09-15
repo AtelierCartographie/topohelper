@@ -15,7 +15,7 @@ import { filter } from 'topojson-simplify'
  * @returns {TopoJSON}
  */
 
-export function toTopojson(topo, geometries, options = {}) {
+export function reconstructTopojson(topo, geometries, options = {}) {
   let {name, collection, addLayer} = options
   collection = collection ?? false
   addLayer = addLayer ?? true

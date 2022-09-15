@@ -1,6 +1,6 @@
 import { filter as topoFilter } from 'topojson-simplify'
 import { toGeojson } from './format/toGeojson.js'
-import { toTopojson } from './helpers/toTopojson.js'
+import { reconstructTopojson } from './helpers/reconstructTopojson.js'
 import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
 /**
@@ -19,7 +19,7 @@ import { addLastLayerName, getLayerName } from './helpers/layers.js'
 export function filter(topo, options = {}) {
   let {chain, layer, condition, name, addLayer, geojson} = options
   
-  layer = getLayerName(topo, layer, chain)
+  layer = getLayerName(topo, layer, {chain})
   name = name ?? "filter"
   addLayer = addLayer ?? true
 
@@ -31,7 +31,7 @@ export function filter(topo, options = {}) {
   let output
 
   if (addLayer) {
-    output = toTopojson(topo, subset, {name, addLayer, collection: true})
+    output = reconstructTopojson(topo, subset, {name, addLayer, collection: true})
   } else {
     const copy = JSON.parse(JSON.stringify(topo)) // Deep copy, for single function mode
     copy.objects[layer].geometries = subset

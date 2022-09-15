@@ -1,14 +1,6 @@
-import {transform, untransform, bbox} from 'topojson-client'
-import {getProj} from './helpers/projections'
+import {transform} from 'topojson-client'
 
-export function project (topo, options = {}) {
-    let {chain, proj, fromProj, geojson} = options
-
-    // No geojson export in chain mode
-    if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
-
-    if (!proj) throw new Error("Missing arguments options.proj")
-    proj = getProj(proj, {topo, fromProj})
+export function decodeTopo (topo, proj) {
 
     const T = transform(topo.transform)
 
@@ -18,33 +10,21 @@ export function project (topo, options = {}) {
     // if so coordinates have to be transformed and projected too
     const allLyr = Object.keys(topo.objects)
     allLyr.forEach(lyr => getPointsTransform(topo.objects[lyr], T, proj))
-  
-    const box = bbox(topo)
-    const newTransform = getTransform(box)
-    const unT = untransform(newTransform)
-  
-    topo.bbox = box
-    topo.transform = newTransform
-    topo.arcs = getArcsTransform(topo, unT) 
 
-    allLyr.forEach(lyr => getPointsTransform(topo.objects[lyr], unT))
-    
+    delete topo.transform
+
     return topo
-  }
-
-// D'après https://github.com/topojson/topojson-client/blob/master/src/quantize.js#L11
-function getTransform (bbox, q = 1e4) {
-    const [x0, y0, x1, y1] = bbox
-
-    return {scale: [x1 - x0 
-                    ? (x1 - x0) / (q - 1) 
-                    : 1,
-                    y1 - y0 
-                      ? (y1 - y0) / (q - 1) 
-                      : 1],
-            translate: [x0, y0]
-           }
 }
+
+export function getArcsCoordinates (topo, arcs) {
+    return arcs.map(i => i >= 0 
+        ? topo.arcs[i]    // positive arc index
+        : topo.arcs[~i]   // negative arc index
+              .slice()      // shallow copy to not alter original order points arc
+              .reverse()    // important to reconstruct geometry
+    )
+}
+
 
 function TransformProjectPoint (point, i, transform, proj) {
     const pointTransform = transform(point,i)   // decoding or delta-encoding

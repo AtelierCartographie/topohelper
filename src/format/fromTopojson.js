@@ -1,3 +1,4 @@
+import { decodeTopo } from '../helpers/transform.js'
 import { topohelper } from '../topohelperClass.js'
 import { getBbox } from '../helpers/bbox.js'
 import { isLonLat } from '../helpers/projections.js'
@@ -18,6 +19,10 @@ export function fromTopojson(topo) {
     copy.bbox = getBbox(copy)
     // Guess if projected or unprojected coordinates
     copy.proj = isLonLat(copy.bbox) ? "+proj=longlat +datum=WGS84" : "unknown"
+
+    let copyDecoded
+    // decode arcs and Point|MultiPoint
+    if (copy.transform !== undefined) copyDecoded = decodeTopo(copy)
     
-    return new topohelper(copy)
+    return new topohelper(copyDecoded)
 }

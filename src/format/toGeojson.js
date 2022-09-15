@@ -1,4 +1,5 @@
 import { feature } from 'topojson-client'
+import { getLayersName } from '../helpers/layers.js'
 
 /**
  * Convert topojson to geojson
@@ -10,7 +11,8 @@ import { feature } from 'topojson-client'
  * @returns {GeoJSON}
  */
 export function toGeojson(topo, options = {}) {
-  const {name, layer} = options
+  let {name, layer} = options
+  layer = getLayersName(topo, layer)
 
   // Specific to the view() function who can also accept geojson as input
   // If already a geojson, just add a name property
@@ -18,22 +20,6 @@ export function toGeojson(topo, options = {}) {
     topo.name = name ?? 0
     return topo
   } 
-  
-  // Get all layers keys/name
-  const allLyr = Object.keys(topo.objects)
-  // In case of one layer, convert to string
-  const cleanAllLyr = (lyrs) => lyrs.length === 1 ? allLyr[0] : allLyr
-  // Retrieve layer name if index number
-  const getLyrName = (lyrKey) => isNaN(lyrKey) ? lyrKey : allLyr[lyrKey]
-
-  // Get layer list to convert
-  const lyr = layer === undefined || layer === "all"
-    // if multiple layers and no layer option, convert all layers
-    ? cleanAllLyr(allLyr)
-    // if multiple layers and layer option, convert selected layers
-    : Array.isArray(layer)
-      ? layer.map(o => getLyrName(o))
-      : getLyrName(layer)
 
   // Conversion to geojson + add layer name as property
   const convert = (layer) => {
@@ -50,7 +36,7 @@ export function toGeojson(topo, options = {}) {
     return geojson
   }
   
-  return Array.isArray(lyr)
-    ? lyr.map(o => convert(o))
-    : convert(lyr)
+  return layer.length > 1
+    ? layer.map(lyr => convert(lyr))
+    : convert(layer)
 }
