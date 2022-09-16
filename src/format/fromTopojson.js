@@ -21,7 +21,7 @@ export function fromTopojson(topo) {
     copy.proj = isLonLat(copy.bbox) ? "+proj=longlat +datum=WGS84" : "unknown"
 
     // decode arcs and Point|MultiPoint
-    if (copy.transform === undefined) return new topohelper(decodeTopo(copy))
+    if (copy.transform !== undefined) return new topohelper(decodeTopo(copy))
     
     return new topohelper(copy)
 }
