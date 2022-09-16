@@ -1,3 +1,5 @@
+import { getGeomCoordinates as convert } from "./transform.js"
+
 // Create a canvas with a 2D context and automatic pixel density scaling
 // Optional id and absolute position style for layering several canvas
 export function newCanvasContext2D(width, height, options = {}) {
@@ -21,14 +23,14 @@ export function newCanvasContext2D(width, height, options = {}) {
 
 // Canvas render of geojson geometries
 // If FeatureCollection or GeometryCollection, iterate over each geometry object
-export function geometryRender(geojson, context, geoPath, color, lineWidth = 0.5) {
+export function geometryRender(geofile, context, geoPath, arcs = undefined, color, lineWidth = 0.5) {
     // TEST GEOMETRY TYPE TO ADAPT RENDER
-    switch (geojson.type) {
+    switch (geofile.type) {
       case 'Point':
       case 'MultiPoint':
         context.fillStyle = color
         context.beginPath()
-        geoPath(geojson)
+        arcs ? convert(arcs, geoPath(geofile)) : geoPath(geofile)
         context.fill()
         break
   
@@ -39,7 +41,7 @@ export function geometryRender(geojson, context, geoPath, color, lineWidth = 0.5
         context.strokeStyle = color
         context.lineWidth = lineWidth
         context.beginPath()
-        geoPath(geojson)
+        arcs ? convert(arcs, geoPath(geofile)) : geoPath(geofile)
         context.stroke()
         break
   
@@ -50,19 +52,19 @@ export function geometryRender(geojson, context, geoPath, color, lineWidth = 0.5
         context.strokeStyle = color
         context.lineWidth = lineWidth
         context.beginPath()
-        geoPath(geojson)
+        arcs ? convert(arcs, geoPath(geofile)) : geoPath(geofile)
         context.stroke()
         break
   
       case 'GeometryCollection':
-        geojson.geometries.forEach(obj => geometryRender(obj, context, geoPath, color))
+        geofile.geometries.forEach(obj => geometryRender(obj, context, geoPath, arcs, color))
         break
   
       case 'FeatureCollection':
-        geojson.features.forEach(obj => geometryRender(obj.geometry, context, geoPath, color))
+        geofile.features.forEach(obj => geometryRender(obj.geometry, context, geoPath, arcs, color))
         break
   
       default:
-        console.log("Sorry, not a valid geojson")
+        console.log("Sorry, not a valid geojson|topojson")
     }
   }

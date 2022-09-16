@@ -2,6 +2,8 @@ import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
 import { select } from 'd3-selection'
 import { toGeojson } from './format/toGeojson.js'
+import { toTopojson } from './format/toTopojson.js'
+import { simplify } from './simplify.js'
 import { getBbox, mergeBbox, bboxToPolygon } from './helpers/bbox'
 import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
 import { getlastLayerName } from './helpers/layers.js'
@@ -23,20 +25,29 @@ export function view(geofile, options = {}) {
     
     const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth]
 
-    // In chain mode, always render the last layer created
+    // In chain mode + {layer: "last"}, always render the last layer created
     if (chain && layer === "last") layer = getlastLayerName(geofile, Object.keys(geofile.objects))
-  
-    // convert geofile to array
-    if (!Array.isArray(geofile)) geofile = [geofile] 
-  
-    // geofile(s) convert into geojson
-    const files = geofile.map( (d,i) => toGeojson(d, {name: i, layer: layer}) ).flat()
 
-    // (unique) bbox of geofile(s)
-    const bbox = mergeBbox( geofile.map(f => getBbox(f)) )
+    
+    // TEST RENDER DIRECTLY FROM TOPOJSON
+    let files = toTopojson(geofile, {layer, q: false})
+    const rectBbox = bboxToPolygon(files.bbox)
+    files = [files]
+    
 
-    // bbox convert into a polygon (rectangle)
-    const rectBbox = bboxToPolygon(bbox)
+    // console.log(files.objects[layer])
+  
+    // // convert geofile to array
+    // if (!Array.isArray(geofile)) geofile = [geofile] 
+  
+    // // geofile(s) convert into geojson
+    // const files = geofile.map( (d,i) => toGeojson(d, {name: i, layer}) ).flat()
+
+    // // (unique) bbox of geofile(s)
+    // const bbox = mergeBbox( geofile.map(f => getBbox(f)) )
+
+    // // bbox convert into a polygon (rectangle)
+    // const rectBbox = bboxToPolygon(bbox)
 
   
     // CANVAS
@@ -96,7 +107,7 @@ export function view(geofile, options = {}) {
     function addLayer(node, file) {
       const ctx = newCanvasContext2D(w,h, {id: file.name, layered: true})
       const geoPath = d3geoPath(proj, ctx).pointRadius(1)
-      geometryRender(file, ctx, geoPath, file.color)
+      geometryRender(file.objects[layer], ctx, geoPath, file, file.color)
       node.append(ctx.canvas)
     }
   

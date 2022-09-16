@@ -1,5 +1,4 @@
 import proj4 from 'proj4'
-import { GeoProjection, geoClipAntimeridian } from 'd3-geo'
 import { getBbox } from './bbox'
 
 // Guess if a topojson is on LatLong crs based on bbox

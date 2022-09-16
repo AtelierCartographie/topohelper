@@ -25,6 +25,30 @@ export function getArcsCoordinates (topo, arcs) {
     )
 }
 
+export function getGeomCoordinates (topo, geom) {
+  const {arcs, type, ...rest} = geom
+  let coordinates = []
+  switch (type) {
+    case 'LineString':
+      coordinates = getArcsCoordinates(topo, arcs)
+      break
+    case 'MultiLineString':
+      coordinates = arcs.map(line => getArcsCoordinates(topo, line))
+      break
+    case 'Polygon':
+      coordinates = arcs.map(ring => getArcsCoordinates(topo, ring))
+      break
+    case 'MultiPolygon':
+      coordinates = arcs.map(poly => poly.map(p => getArcsCoordinates(topo, p)))
+      break
+  }
+  return {
+    type,
+    ...rest,
+    coordinates
+  }
+}
+
 
 function TransformProjectPoint (point, i, transform, proj) {
     const pointTransform = transform(point,i)   // decoding or delta-encoding

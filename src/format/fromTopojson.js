@@ -20,9 +20,8 @@ export function fromTopojson(topo) {
     // Guess if projected or unprojected coordinates
     copy.proj = isLonLat(copy.bbox) ? "+proj=longlat +datum=WGS84" : "unknown"
 
-    let copyDecoded
     // decode arcs and Point|MultiPoint
-    if (copy.transform !== undefined) copyDecoded = decodeTopo(copy)
+    if (copy.transform === undefined) return new topohelper(decodeTopo(copy))
     
-    return new topohelper(copyDecoded)
+    return new topohelper(copy)
 }
