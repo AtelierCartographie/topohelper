@@ -1,6 +1,7 @@
 import { filter as topoFilter } from 'topojson-simplify'
 import { reconstructTopojson } from './helpers/reconstructTopojson.js'
 import { addLastLayerName, getLayerName } from './helpers/layers.js'
+import { getBbox } from './helpers/bbox.js'
 
 /**
  * Filter a topojson
@@ -15,13 +16,15 @@ import { addLastLayerName, getLayerName } from './helpers/layers.js'
  * @returns {TopoJSON}
  */
 export function filter(topo, options = {}) {
-  let {chain, layer, condition, name, addLayer, geojson} = options
+  let {chain, layer, condition, name, addLayer} = options
   
   layer = getLayerName(topo, layer, {chain})
   name = name ?? "filter"
   addLayer = addLayer ?? true
 
-  const subset = topo.objects[layer].geometries.filter(condition ? condition : d => d)
+  const throwError = () => new Error ("No condition submit. Ex:  {condition: d => d.properties.pop > 100")
+
+  const subset = topo.objects[layer].geometries.filter(condition ? condition : throwError())
 
   let output
 
@@ -29,8 +32,12 @@ export function filter(topo, options = {}) {
     output = reconstructTopojson(topo, subset, {name, addLayer, collection: true})
   } else {
     // const copy = JSON.parse(JSON.stringify(topo)) // Deep copy, for single function mode
-    copy.objects[layer].geometries = subset
-    output = topoFilter(copy)
+    topo.objects[layer].geometries = subset
+    output = topoFilter(topo)
+    delete output.transform
+    delete output.bbox
+    output.bbox = getBbox(output)
+    return output
   }
 
   // Update topojson.lastLayer property
