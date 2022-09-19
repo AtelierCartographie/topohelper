@@ -8,6 +8,7 @@ import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
 import { getlastLayerName, getLayersName } from './helpers/layers.js'
 import { fromTopojson } from './format/fromTopojson.js'
 import { fromGeojson } from './format/fromGeojson.js'
+import { meshArcs } from 'topojson-client'
 
 /**
  * TODO
@@ -40,12 +41,14 @@ export function view(geofile, options = {}) {
     // RENDER DIRECTLY IN CANVAS FROM TOPOJSON
     // Original topojson
     const raw = toTopojson(geofile, {layer, q: false})
-    const {arcs, bbox, objects} = raw
+    const {arcs, bbox} = raw
     const rectBbox = bboxToPolygon(bbox)
-    const files = Object.values(objects)
+
+    // Geometry objects of original topojson convert to mesh is no Point|MultiPoint present
+    const files = toMesh(raw, layer)
+
     // Simplified topojson used when zooming
-    const {arcs: lightArcs, objects: lightObjects} = simplify(raw, {level: 0.2})
-    const lightFiles = Object.values(lightObjects)
+    const {arcs: lightArcs} = simplify(raw, {level: 0.2})
 
   
     // CANVAS
@@ -67,16 +70,16 @@ export function view(geofile, options = {}) {
       addLayer(geoViewer, file, layer[i])
     })
   
-    if (zoom) addZoom(files)
+    if (zoom) addZoom()
 
     
     // ZOOM
     // Zoom event on parent div#geoviewer, not a canvas directly
-    function addZoom(files) {
+    function addZoom() {
       select(geoViewer)
         .call(d3zoom()
                 .scaleExtent([1, 100])
-                .on("zoom", ({transform}) => zoomed(transform, lightFiles, lightArcs))
+                .on("zoom", ({transform}) => zoomed(transform, files, lightArcs))
                 .on("end",  ({transform}) => zoomed(transform, files, arcs))
              )
     }
@@ -120,4 +123,33 @@ export function view(geofile, options = {}) {
     }
   
     return geoViewer  
+  }
+
+  /**
+   * Check if a geometry object of a topojson contains Point|MultiPoint
+   * Return boolean
+   */
+  function containsPoint (geom) {
+    switch (geom.type) {
+      case 'GeometryCollection':
+        return geom.geometries.map(g => containsPoint(g)).includes(true)
+      case 'Point':
+      case 'MultiPoint':
+        return true
+      default:
+        return false
+    }
+  }
+
+  /**
+   * Convert to a mesh every layers without Point|MultiPoint.
+   * If a layer has Point|MultiPoint, it's return without modification.
+   * Return an array of geometry object
+   */
+  function toMesh (topo, layers) {
+    const contains = layers.map(L => containsPoint(topo.objects[L]))
+    return layers.map((L,i) => contains[i] === false
+                                  ? meshArcs(topo, topo.objects[L])
+                                  : topo.objects[L]
+                    )
   }
