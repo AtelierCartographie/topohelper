@@ -16,30 +16,30 @@ export function decodeTopo (topo, proj) {
     return topo
 }
 
-export function getArcsCoordinates (topo, arcs) {
-    return arcs.map(i => i >= 0 
-        ? topo.arcs[i]    // positive arc index
-        : topo.arcs[~i]   // negative arc index
-              .slice()      // shallow copy to not alter original order points arc
-              .reverse()    // important to reconstruct geometry
-    )
+export function getArcsCoordinates (topoArcs, arcs) {
+    return arcs.map((arcIndex, i) => arcIndex >= 0 
+        ? cleanCoordinates(topoArcs[arcIndex], i)   // positive arc index
+        : cleanCoordinates(topoArcs[~arcIndex]      // negative arc index
+                            .slice()                // shallow copy to not alter original order points arc
+                            .reverse(), i)          // important to reconstruct geometry
+    ).flat()
 }
 
-export function getGeomCoordinates (topo, geom) {
+export function getGeomCoordinates (topoArcs, geom) {
   const {arcs, type, ...rest} = geom
   let coordinates = []
   switch (type) {
     case 'LineString':
-      coordinates = getArcsCoordinates(topo, arcs)
+      coordinates = getArcsCoordinates(topoArcs, arcs)
       break
     case 'MultiLineString':
-      coordinates = arcs.map(line => getArcsCoordinates(topo, line))
+      coordinates = arcs.map(line => getArcsCoordinates(topoArcs, line))
       break
     case 'Polygon':
-      coordinates = arcs.map(ring => getArcsCoordinates(topo, ring))
+      coordinates = arcs.map(ring => getArcsCoordinates(topoArcs, ring))
       break
     case 'MultiPolygon':
-      coordinates = arcs.map(poly => poly.map(p => getArcsCoordinates(topo, p)))
+      coordinates = arcs.map(poly => poly.map(p => getArcsCoordinates(topoArcs, p)))
       break
   }
   return {
@@ -48,6 +48,9 @@ export function getGeomCoordinates (topo, geom) {
     coordinates
   }
 }
+
+// Remove subsequent identical positions between arcs, https://github.com/topojson/topojson-specification#214-arc-indexes
+const cleanCoordinates = (coords, i) => i > 0 ? coords.slice(1) : coords
 
 
 function TransformProjectPoint (point, i, transform, proj) {

@@ -21,11 +21,11 @@ export class topohelper {
 
     // Instantiate a topohelper class from a topojson or geojson
     static from(topo) {
-        return fromTopojson(topo)
-      }
+      return fromTopojson(topo)
+    }
     
     static fromGeojson(geojson, options = {}) {
-        return fromGeojson(geojson, options)
+      return fromGeojson(geojson, options)
     }
   
     toGeojson(options = {}) {

@@ -1,12 +1,13 @@
 import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
 import { select } from 'd3-selection'
-import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './format/toTopojson.js'
 import { simplify } from './simplify.js'
-import { getBbox, mergeBbox, bboxToPolygon } from './helpers/bbox'
+import { bboxToPolygon } from './helpers/bbox'
 import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
-import { getlastLayerName } from './helpers/layers.js'
+import { getlastLayerName, getLayersName } from './helpers/layers.js'
+import { fromTopojson } from './format/fromTopojson.js'
+import { fromGeojson } from './format/fromGeojson.js'
 
 /**
  * TODO
@@ -22,32 +23,29 @@ import { getlastLayerName } from './helpers/layers.js'
  */
 export function view(geofile, options = {}) {
     let {chain, layer, zoom, size} = options
-    
     const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth]
+
+    // SINGLE FUNCTION MODE
+    // Convert topojson or geojson|geojson[] into topohelper topojson
+    if (chain !== true) {
+      geofile = (!Array.isArray(geofile) && geofile.type === "Topology")
+        ? fromTopojson(geofile).topojson
+        : fromGeojson(geofile)
+    }
 
     // In chain mode + {layer: "last"}, always render the last layer created
     if (chain && layer === "last") layer = getlastLayerName(geofile, Object.keys(geofile.objects))
-
+    layer = getLayersName(geofile, layer)
     
-    // TEST RENDER DIRECTLY FROM TOPOJSON
-    let files = toTopojson(geofile, {layer, q: false})
-    const rectBbox = bboxToPolygon(files.bbox)
-    files = [files]
-    
-
-    // console.log(files.objects[layer])
-  
-    // // convert geofile to array
-    // if (!Array.isArray(geofile)) geofile = [geofile] 
-  
-    // // geofile(s) convert into geojson
-    // const files = geofile.map( (d,i) => toGeojson(d, {name: i, layer}) ).flat()
-
-    // // (unique) bbox of geofile(s)
-    // const bbox = mergeBbox( geofile.map(f => getBbox(f)) )
-
-    // // bbox convert into a polygon (rectangle)
-    // const rectBbox = bboxToPolygon(bbox)
+    // RENDER DIRECTLY IN CANVAS FROM TOPOJSON
+    // Original topojson
+    const raw = toTopojson(geofile, {layer, q: false})
+    const {arcs, bbox, objects} = raw
+    const rectBbox = bboxToPolygon(bbox)
+    const files = Object.values(objects)
+    // Simplified topojson used when zooming
+    const {arcs: lightArcs, objects: lightObjects} = simplify(raw, {level: 0.2})
+    const lightFiles = Object.values(lightObjects)
 
   
     // CANVAS
@@ -60,6 +58,17 @@ export function view(geofile, options = {}) {
     geoViewer.style.width = w + "px"
     geoViewer.style.height = h + "px"
   
+    // couleurs différentes par calques, réutilisées si plus de 6 calques
+    const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
+
+    // CREATE CANVAS LAYERS AND RENDER LAYERS
+    files.forEach((file,i) => {
+      file.color = colors[i%6]
+      addLayer(geoViewer, file, layer[i])
+    })
+  
+    if (zoom) addZoom(files)
+
     
     // ZOOM
     // Zoom event on parent div#geoviewer, not a canvas directly
@@ -67,12 +76,13 @@ export function view(geofile, options = {}) {
       select(geoViewer)
         .call(d3zoom()
                 .scaleExtent([1, 100])
-                .on("zoom", ({transform}) => zoomed(transform, files))
+                .on("zoom", ({transform}) => zoomed(transform, lightFiles, lightArcs))
+                .on("end",  ({transform}) => zoomed(transform, files, arcs))
              )
     }
   
     // Apply zoom to each canvas of the geoviewer
-    function zoomed(transform, files) {
+    function zoomed(transform, files, arcs) {
         const dpi = devicePixelRatio
 
         const allCanvas = [...geoViewer.getElementsByTagName('canvas')] // HTMLCollection to array
@@ -93,7 +103,7 @@ export function view(geofile, options = {}) {
             // ajustement pour que l'épaisseur reste en réalité constante visuellement
             const lineWidth = 0.5 / k
             
-            geometryRender(file, context, geoPath.pointRadius(1 / k), file.color, lineWidth)
+            geometryRender(file, context, geoPath.pointRadius(1 / k), arcs, file.color, lineWidth)
         
             context.restore()
         }
@@ -101,25 +111,13 @@ export function view(geofile, options = {}) {
         allCanvas.forEach( (c,i) => rendering(transform, files[i], c.getContext('2d'), allGeoPath[i]))
     }
     
-  
-    // CREATE CANVAS LAYERS
     // function to 1) create a canvas, 2) draw geometry, 3) add it to a node
-    function addLayer(node, file) {
-      const ctx = newCanvasContext2D(w,h, {id: file.name, layered: true})
+    function addLayer(node, file, layer) {
+      const ctx = newCanvasContext2D(w,h, {id: layer, layered: true})
       const geoPath = d3geoPath(proj, ctx).pointRadius(1)
-      geometryRender(file.objects[layer], ctx, geoPath, file, file.color)
+      geometryRender(file, ctx, geoPath, arcs, file.color)
       node.append(ctx.canvas)
     }
-  
-    // couleurs différentes par calques, réutilisées si plus de 6 calques
-    const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
-
-    files.forEach((file,i) => {
-      file.color = colors[i%6]
-      addLayer(geoViewer, file)
-    })
-  
-    if (zoom) addZoom(files)
   
     return geoViewer  
   }

@@ -66,11 +66,11 @@ const getCentroid = (topo, geometry, better) => {
     // Polygon and MultiPolygon handle differently
     switch (geometry.type) {
         case 'Polygon':
-            polyCoords = geometry.arcs.map(arcs => getArcsCoordinates(topo, arcs).flat())
+            polyCoords = geometry.arcs.map(arcs => getArcsCoordinates(topo.arcs, arcs))
             if (!better) vertices = polyCoords.flat()
             break
         case 'MultiPolygon':
-            const multiPolyCoords = geometry.arcs.map(poly => poly.map(arcs => getArcsCoordinates(topo, arcs).flat()))
+            const multiPolyCoords = geometry.arcs.map(poly => poly.map(arcs => getArcsCoordinates(topo.arcs, arcs)))
             const areas = multiPolyCoords.map(poly => getBboxFromCoordinates(poly.flat()))
                                          .map(bbox => getAreaFromBbox(bbox))
                                          .map(d => d === Infinity ? null : d) // fix error with empty polygon array resulting in Infinity bbox value

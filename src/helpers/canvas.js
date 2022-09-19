@@ -23,14 +23,14 @@ export function newCanvasContext2D(width, height, options = {}) {
 
 // Canvas render of geojson geometries
 // If FeatureCollection or GeometryCollection, iterate over each geometry object
-export function geometryRender(geofile, context, geoPath, arcs = undefined, color, lineWidth = 0.5) {
+export function geometryRender(geofile, context, geoPath, arcs, color, lineWidth = 0.5) {
     // TEST GEOMETRY TYPE TO ADAPT RENDER
     switch (geofile.type) {
       case 'Point':
       case 'MultiPoint':
         context.fillStyle = color
         context.beginPath()
-        arcs ? convert(arcs, geoPath(geofile)) : geoPath(geofile)
+        geoPath(geofile)
         context.fill()
         break
   
@@ -41,7 +41,7 @@ export function geometryRender(geofile, context, geoPath, arcs = undefined, colo
         context.strokeStyle = color
         context.lineWidth = lineWidth
         context.beginPath()
-        arcs ? convert(arcs, geoPath(geofile)) : geoPath(geofile)
+        arcs ? geoPath(convert(arcs, geofile)) : geoPath(geofile)
         context.stroke()
         break
   
@@ -52,7 +52,7 @@ export function geometryRender(geofile, context, geoPath, arcs = undefined, colo
         context.strokeStyle = color
         context.lineWidth = lineWidth
         context.beginPath()
-        arcs ? convert(arcs, geoPath(geofile)) : geoPath(geofile)
+        arcs ? geoPath(convert(arcs, geofile)) : geoPath(geofile)
         context.stroke()
         break
   
