@@ -1,6 +1,5 @@
 import isInside from 'point-in-polygon-hao'
 import polylabel from 'polylabel'
-import { toGeojson } from './format/toGeojson.js'
 import { reconstructTopojson } from './helpers/reconstructTopojson.js'
 import { addLastLayerName, getLayerName } from './helpers/layers.js'
 import { getArcsCoordinates } from './helpers/transform.js'
@@ -11,22 +10,18 @@ import { getArcsCoordinates } from './helpers/transform.js'
  *
  * @param {TopoJSON} topo - A valid topojson object
  * @param {Object} options - optional parameters except for name
- * @param {Boolean} options.chain - intern option to know if function is called in chained mode or single function mode
+ * @param {Boolean} options.chain - intern option to know if function is called in chained mode
  * @param {String|Number} options.layer - a single target layer (name or index)
  * @param {String} options.name - name of the new layer
  * @param {Boolean} options.addLayer - true add a layer to existing ones
  * @param {Boolean} options.better - true calcul pole of inaccessibility instead of centroid
- * @param {Boolean} options.geojson - true convert output from topojson to geojson (only in single function mode)
- * @returns {TopoJSON|GeoJSON}
+ * @returns {TopoJSON}
  */
 export const centroids = (topo, options = {}) => {
-    let {chain, layer, name, addLayer, better, geojson} = options
+    let {chain, layer, name, addLayer, better} = options
 
     layer = getLayerName(topo, layer, {chain})
     name = name ?? "centroids"
-  
-    // No geojson export in chain mode
-    if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
   
     // Handle GeometryCollection and single geometry differently
     const lyr = topo.objects[layer]
@@ -50,9 +45,7 @@ export const centroids = (topo, options = {}) => {
     // Update topojson.lastLayer property
     addLastLayerName(output, name)
 
-    return geojson
-        ? toGeojson(output)
-        : output
+    return output
   }
 
 

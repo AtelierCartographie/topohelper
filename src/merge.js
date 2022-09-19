@@ -1,5 +1,4 @@
 import { mergeArcs as topoMergeArcs } from 'topojson-client'
-import { toGeojson } from './format/toGeojson.js'
 import { reconstructTopojson } from './helpers/reconstructTopojson.js'
 import { addLastLayerName, getLayerName } from './helpers/layers.js'
 
@@ -15,17 +14,13 @@ import { addLastLayerName, getLayerName } from './helpers/layers.js'
  * @param {String} options.group - group by a data properties before
  * @param {String} options.name - name of the new layer
  * @param {Boolean} options.addLayer - true add a layer to existing ones
- * @param {Boolean} options.geojson - true convert output from topojson to geojson (only in single function mode)
- * @returns {TopoJSON|GeoJSON}
+ * @returns {TopoJSON}
  */
 export function merge(topo, options = {}) {
-  let {chain, layer, group, name, addLayer, geojson} = options
+  let {chain, layer, group, name, addLayer} = options
 
   layer = getLayerName(topo, layer, {chain})
   name = name ?? group ? `merge_groupBy_${group}` : "merge"
-
-  // No geojson export in chain mode
-  if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
   
   if (!group) {
     const geometries = topoMergeArcs(topo, topo.objects[layer].geometries)
@@ -34,9 +29,7 @@ export function merge(topo, options = {}) {
     // Update topojson.lastLayer property
     addLastLayerName(output, name)
 
-    return geojson
-      ? toGeojson(output)
-      : output
+    return output
   } 
 
   // GroupBy
@@ -60,7 +53,5 @@ export function merge(topo, options = {}) {
   addLastLayerName(output, name)
 
   // return geojson or topojson
-  return geojson
-    ? toGeojson(output)
-    : output
+  return output
 }
