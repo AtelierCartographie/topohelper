@@ -1,6 +1,6 @@
 import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
-import { select } from 'd3-selection'
+import { select, pointer } from 'd3-selection'
 import { toTopojson } from './format/toTopojson.js'
 import { simplify } from './simplify.js'
 import { bboxToPolygon } from './helpers/bbox'
@@ -23,8 +23,9 @@ import { meshArcs } from 'topojson-client'
  * @returns {HTMLCanvasElement}
  */
 export function view(geofile, options = {}) {
-    let {chain, layer, zoom, size} = options
+    let {chain, layer, zoom, tooltip, size} = options
     const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth]
+    tooltip = tooltip ?? true
 
     // SINGLE FUNCTION MODE
     // Convert topojson or geojson|geojson[] into topohelper topojson
@@ -60,6 +61,16 @@ export function view(geofile, options = {}) {
     geoViewer.id = "geoviewer"
     geoViewer.style.width = w + "px"
     geoViewer.style.height = h + "px"
+    // Create a div to receive pointer coordinates infos
+    const coordsInfo = document.createElement("div")
+    coordsInfo.id = "coords"
+    coordsInfo.style.position = "absolute", coordsInfo.style.zIndex = "1"
+    coordsInfo.style.bottom = "10px", coordsInfo.style.left = "10px"
+    coordsInfo.style.padding = "0 5px"
+    coordsInfo.style.fontFamily = "sans-serif", coordsInfo.style.fontSize = "12px"
+    coordsInfo.style.background = "rgba(255,255,255,0.7)"
+
+    geoViewer.appendChild(coordsInfo)
   
     // couleurs différentes par calques, réutilisées si plus de 6 calques
     const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
@@ -71,10 +82,17 @@ export function view(geofile, options = {}) {
     })
   
     if (zoom) addZoom()
+    if (tooltip) select(geoViewer).on("mousemove", event => mousemoved(event))
 
+    // TOOLTIP
+    function mousemoved (event) {
+      const [x, y] = pointer(event)
+      const inverted = proj.invert([x, y])
+      select(coordsInfo).text(inverted[0].toLocaleString() + " ; " + inverted[1].toLocaleString())
+    }
     
     // ZOOM
-    // Zoom event on parent div#geoviewer, not a canvas directly
+    // Zoom event on parent div#geoviewer, not on canvas directly
     function addZoom() {
       select(geoViewer)
         .call(d3zoom()
