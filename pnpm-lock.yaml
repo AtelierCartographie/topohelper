@@ -4,6 +4,7 @@ specifiers:
   d3-geo: ^3.0.1
   d3-selection: ^3.0.0
   d3-zoom: ^3.0.0
+  flatbush: ^4.0.0
   point-in-polygon-hao: ^1.1.0
   polylabel: ^1.1.0
   proj4: ^2.8.0
@@ -16,6 +17,7 @@ devDependencies:
   d3-geo: 3.0.1
   d3-selection: 3.0.0
   d3-zoom: 3.0.0
+  flatbush: 4.0.0
   point-in-polygon-hao: 1.1.0
   polylabel: 1.1.0
   proj4: 2.8.0
@@ -325,6 +327,18 @@ packages:
       esbuild-windows-32: 0.14.54
       esbuild-windows-64: 0.14.54
       esbuild-windows-arm64: 0.14.54
+    dev: true
+
+  /flatbush/4.0.0:
+    resolution: {integrity: sha512-8uhCysYGqg9hqyJX8ICqX4PiXcKbdEXGPpVZyGQmPtdWN5uhEF5JtVD3OmVdIL4yuLV6tc+u9D22R+51iKTCDA==}
+    engines: {node: '>= 12.17.0'}
+    dependencies:
+      flatqueue: 2.0.3
+    dev: true
+
+  /flatqueue/2.0.3:
+    resolution: {integrity: sha512-RZCWZNkmxzUOh8jqEcEGZCycb3B8KAfpPwg3H//cURasunYxsg1eIvE+QDSjX+ZPHTIVfINfK1aLTrVKKO0i4g==}
+    engines: {node: '>= 12.17.0'}
     dev: true
 
   /fsevents/2.3.2:

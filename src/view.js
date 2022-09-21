@@ -1,4 +1,4 @@
-import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
+import { geoIdentity, geoContains, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
 import { select, pointer } from 'd3-selection'
 import { toTopojson } from './format/toTopojson.js'
@@ -9,6 +9,8 @@ import { getlastLayerName, getLayersName } from './helpers/layers.js'
 import { fromTopojson } from './format/fromTopojson.js'
 import { fromGeojson } from './format/fromGeojson.js'
 import { meshArcs } from 'topojson-client'
+import Flatbush from 'flatbush'
+import { getGeomCoordinates } from './helpers/transform.js'
 
 /**
  * TODO
@@ -70,7 +72,7 @@ export function view(geofile, options = {}) {
     coordsInfo.style.fontFamily = "sans-serif", coordsInfo.style.fontSize = "12px"
     coordsInfo.style.background = "rgba(255,255,255,0.7)"
 
-    geoViewer.appendChild(coordsInfo)
+    geoViewer.append(coordsInfo)
   
     // couleurs différentes par calques, réutilisées si plus de 6 calques
     const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
@@ -82,14 +84,106 @@ export function view(geofile, options = {}) {
     })
   
     if (zoom) addZoom()
-    if (tooltip) select(geoViewer).on("mousemove", event => mousemoved(event))
+    if (tooltip) {
+      // Create a div to receive properties infos of geometry hover
+      const pInfo = document.createElement("div")
+      pInfo.id = "propertyPanel"
+      pInfo.style.position = "absolute", pInfo.style.zIndex = "1"
+      pInfo.style.top = "10px", pInfo.style.left = "10px"
+      pInfo.style.padding = "5px"
+      pInfo.style.fontFamily = "sans-serif", pInfo.style.fontSize = "12px"
+      pInfo.style.background = "rgba(255,255,255,0.7)"
 
-    // TOOLTIP
-    function mousemoved (event) {
-      const [x, y] = pointer(event)
-      const inverted = proj.invert([x, y])
-      select(coordsInfo).text(inverted[0].toLocaleString() + " ; " + inverted[1].toLocaleString())
+      geoViewer.append(pInfo)
+      
+      // Create canvas that will receive hover geometries
+      const ctx = newCanvasContext2D(w,h, {id: "tooltip", layered: true})
+      geoViewer.append(ctx.canvas)
+      const geoPath = d3geoPath(proj, ctx).pointRadius(5)
+
+      select(geoViewer).on("mousemove", event => mousemoved(event))
+    
+      // FLATBUSH
+      // determine number of items
+      // GeometryCollection or Single Geometry
+      const geometry = raw.objects[layer[0]].type === "GeometryCollection"
+                          ? raw.objects[layer[0]].geometries
+                          : [raw.objects[layer[0]]]
+      const indexSize = geometry.length 
+      // create our Flatbush index
+      let index = new Flatbush(indexSize)
+
+      const addToIndex = (geom) => {
+        // bbox of each feature to pass in Flatbush
+        let bbox
+        if (geom.type === "Point") {
+          const [x, y] = proj(geom.coordinates)
+          bbox = [[x-10, y-10], [x+10, y+10]] // buffer around point pixel coordinates
+        } else {
+          bbox = geoPath.bounds(getGeomCoordinates(raw.arcs, geom))
+        }
+        const [[x0, y0], [x1, y1]] = bbox
+    
+        // and now, add bbox feature to our index
+        index.add(
+          Math.floor(x0), Math.floor(y0),
+          Math.ceil(x1),  Math.ceil(y1)
+        )
+      }
+
+      // Fill index
+      geometry.forEach(addToIndex)
+      // Perform the indexing
+      index.finish()
+
+      // TOOLTIP
+      function mousemoved (event) {
+        const [x, y] = pointer(event)
+        const inverted = proj.invert([x, y])
+        select(coordsInfo).text(inverted[0].toLocaleString() + " ; " + inverted[1].toLocaleString())
+
+        const results = index.search(x, y, x, y)
+        
+        if (results.length > 0) {
+          // pick first result for now
+          let found = results[0]
+          let foundGeom = getGeomCoordinates(raw.arcs, geometry[found])
+          // Check if one of results is inside
+          results.forEach(i => {
+            const geom = geometry[i]
+            const geomCoords = getGeomCoordinates(raw.arcs, geom)
+            if (geoContains(geomCoords, inverted)) {
+              found = i
+              foundGeom = geomCoords
+            }
+          })
+
+          // Show properties panel
+          pInfo.style.display = "block"
+          objectToTable(foundGeom.properties, pInfo)
+
+          // Render canvas
+          ctx.save()
+          ctx.clearRect(0, 0, w, h)
+          ctx.canvas.style.cursor = 'pointer'
+
+          geometryRender(foundGeom, ctx, geoPath, undefined, "#ff3b00", 2)
+
+          ctx.restore()
+
+        } else {
+          // Clear canvas
+          ctx.clearRect(0, 0, w, h)
+          ctx.canvas.style.cursor = null
+          // hide properties panel
+          pInfo.style.display = "none"
+        }
+
+        
+      }
     }
+
+    
     
     // ZOOM
     // Zoom event on parent div#geoviewer, not on canvas directly
@@ -170,4 +264,31 @@ export function view(geofile, options = {}) {
                                   ? meshArcs(topo, topo.objects[L])
                                   : topo.objects[L]
                     )
+  }
+
+  /**
+   * Generate an html table from a properties Object
+   * {key1: value1, key2: value2...}
+   */
+  function objectToTable(object, node) {
+    if (!object) return
+    node.replaceChildren()
+
+    const data = Object.entries(object)
+    // creates a <table> element and a <tbody> element
+    const tbl = document.createElement("table")
+
+    data.forEach(row => {
+      const R = document.createElement("tr")
+      row.forEach(cell => {
+        const C = document.createElement("td")
+        const Ctext = document.createTextNode(cell)
+        C.appendChild(Ctext)
+        R.appendChild(C)
+      })
+      // add the row to the end of the table body
+      tbl.appendChild(R)
+    })
+    
+    node.appendChild(tbl);
   }

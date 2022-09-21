@@ -23,6 +23,7 @@
     "d3-geo": "^3.0.1",
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
+    "flatbush": "^4.0.0",
     "point-in-polygon-hao": "^1.1.0",
     "polylabel": "^1.1.0",
     "proj4": "^2.8.0",
