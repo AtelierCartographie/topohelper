@@ -123,7 +123,7 @@ export function view(geofile, options = {}) {
         let bbox
         if (geom.type === "Point") {
           const [x, y] = proj(geom.coordinates)
-          bbox = [[x-3, y-3], [x+3, y+3]] // buffer around point pixel coordinates
+          bbox = [[x-1, y-1], [x+1, y+1]] // buffer around point pixel coordinates
         } else {
           bbox = geoPath.bounds(getGeomCoordinates(raw.arcs, geom))
         }
