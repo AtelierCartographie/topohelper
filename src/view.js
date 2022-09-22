@@ -1,4 +1,4 @@
-import { geoIdentity, geoContains, geoPath as d3geoPath } from 'd3-geo'
+import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
 import { select, pointer } from 'd3-selection'
 import { toTopojson } from './format/toTopojson.js'
@@ -21,13 +21,14 @@ import { getGeomCoordinates } from './helpers/transform.js'
  * @param {Boolean} options.chain - intern option to know if function is called in chained mode or single function mode
  * @param {String|Number} options.layer - a single target layer (name or index). If "last" + chain mode, render the last layer created. If omit or "all" render all layers.
  * @param {Boolean} options.zoom - true add a d3 zoom
+ * @param {Boolean} options.tooltip - true add a tooltip
  * @param {Number[]} options.size - canvas dimensions as [width, height]
  * @returns {HTMLCanvasElement}
  */
 export function view(geofile, options = {}) {
     let {chain, layer, zoom, tooltip, size} = options
-    const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth]
-    tooltip = tooltip ?? true
+    const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth/1.5]
+    tooltip = tooltip ?? false
 
     // SINGLE FUNCTION MODE
     // Convert topojson or geojson|geojson[] into topohelper topojson
@@ -122,7 +123,7 @@ export function view(geofile, options = {}) {
         let bbox
         if (geom.type === "Point") {
           const [x, y] = proj(geom.coordinates)
-          bbox = [[x-10, y-10], [x+10, y+10]] // buffer around point pixel coordinates
+          bbox = [[x-3, y-3], [x+3, y+3]] // buffer around point pixel coordinates
         } else {
           bbox = geoPath.bounds(getGeomCoordinates(raw.arcs, geom))
         }
@@ -159,7 +160,8 @@ export function view(geofile, options = {}) {
           results.forEach(i => {
             const geom = geometry[i]
             const geomCoords = getGeomCoordinates(raw.arcs, geom)
-            if (geoContains(geomCoords, inverted)) {
+            const path2d = new Path2D(d3geoPath(proj)(geomCoords)) // string svg = geoPath sans context
+            if (ctx.isPointInPath(path2d, x, y)) {
               found = i
               foundGeom = geomCoords
             }

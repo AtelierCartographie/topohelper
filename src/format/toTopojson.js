@@ -17,6 +17,9 @@ export function toTopojson (topo, options = {}) {
     q = q ?? 1e4
     layer = getLayersName(topo, layer)
 
+    // Deep copy of topojson
+    topo = structuredClone(topo)
+
     const allLayers = Object.keys(topo.objects)
 
     // Store proj property to reinject later
