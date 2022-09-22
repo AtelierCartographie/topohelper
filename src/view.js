@@ -77,6 +77,8 @@ export function view(geofile, options = {}) {
     // couleurs différentes par calques, réutilisées si plus de 6 calques
     const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
 
+    
+
     // CREATE CANVAS LAYERS AND RENDER LAYERS
     files.forEach((file,i) => {
       file.color = colors[i%6]
@@ -84,6 +86,8 @@ export function view(geofile, options = {}) {
     })
   
     if (zoom) addZoom()
+    // Save current transform
+    let currentTransform = {x: 0, y: 0, k: 1}
     if (tooltip) {
       // Create a div to receive properties infos of geometry hover
       const pInfo = document.createElement("div")
@@ -138,7 +142,10 @@ export function view(geofile, options = {}) {
 
       // TOOLTIP
       function mousemoved (event) {
-        const [x, y] = pointer(event)
+        const {x: zx, y: zy, k: zk} = currentTransform
+        const pixel = pointer(event)
+        const [x, y] = [(pixel[0] - zx) / zk, (pixel[1] - zy) / zk]
+
         const inverted = proj.invert([x, y])
         select(coordsInfo).text(inverted[0].toLocaleString() + " ; " + inverted[1].toLocaleString())
 
@@ -163,12 +170,18 @@ export function view(geofile, options = {}) {
           objectToTable(foundGeom.properties, pInfo)
 
           // Render canvas
+          const dpi = devicePixelRatio
+          
+
+          ctx.canvas.width = ctx.canvas.width
           ctx.save()
           ctx.clearRect(0, 0, w, h)
+          // modification de l'état du canvas avec la transformation désirée
+          ctx.translate(dpi * zx, dpi * zy)  
+          ctx.scale(dpi * zk, dpi * zk)
+          const lineWidth = 2 / zk // constant lineWidth
           ctx.canvas.style.cursor = 'pointer'
-
-          geometryRender(foundGeom, ctx, geoPath, undefined, "#ff3b00", 2)
-
+          geometryRender(foundGeom, ctx, geoPath.pointRadius(5 / zk), undefined, "#ff3b00", lineWidth)
           ctx.restore()
 
         } else {
@@ -198,9 +211,16 @@ export function view(geofile, options = {}) {
   
     // Apply zoom to each canvas of the geoviewer
     function zoomed(transform, files, arcs) {
+        currentTransform = transform
         const dpi = devicePixelRatio
 
-        const allCanvas = [...geoViewer.getElementsByTagName('canvas')] // HTMLCollection to array
+        // clear tooltip canvas when pan & zoom
+        if (tooltip) {
+          const cvTooltip = geoViewer.querySelector('canvas#tooltip')
+          cvTooltip.width = cvTooltip.width
+        }
+
+        const allCanvas = [...geoViewer.querySelectorAll('canvas:not(#tooltip)')] // HTMLCollection to array
         const allGeoPath = allCanvas.map(c => d3geoPath(proj, c.getContext("2d")))
 
         function rendering(transform, file, context, geoPath) {
