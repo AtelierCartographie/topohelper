@@ -30,7 +30,7 @@ export function reconstructTopojson(topo, geometries, options = {}) {
     : { [name]: geometries }
 
   const {objects, ...rest} = topo
-  const output = {
+  let output = {
     ...rest,
     objects: (addLayer)
       ? {...objects,
@@ -38,5 +38,12 @@ export function reconstructTopojson(topo, geometries, options = {}) {
       : {...geom}
   }
 
-  return (addLayer) ? output : filter(output)
+  if (addLayer) {
+    const {proj} = output
+    output = filter(output)
+    delete output.transform
+    output.proj = proj
+  }
+
+  return output
 }
