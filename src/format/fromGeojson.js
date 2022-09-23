@@ -29,7 +29,7 @@ export function fromGeojson(geojson, options = {}) {
     // null because no quantization, will be added if choices at export
     const topo = topology(input, null)
     // get and add a bbox property
-    topo.bbox = getBbox(geojson)
+    topo.bbox = getBbox(topo)
     // Guess if projected or unprojected coordinates
     topo.proj = isLonLat(topo.bbox) ? "+proj=longlat +datum=WGS84" : "unknown"
 

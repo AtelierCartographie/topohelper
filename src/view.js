@@ -44,7 +44,7 @@ export function view(geofile, options = {}) {
     
     // RENDER DIRECTLY IN CANVAS FROM TOPOJSON
     // Original topojson
-    const raw = toTopojson(geofile, {layer, q: false})
+    const raw = geofile // toTopojson(geofile, {layer, q: false})
     const {arcs, bbox} = raw
     const rectBbox = bboxToPolygon(bbox)
 
