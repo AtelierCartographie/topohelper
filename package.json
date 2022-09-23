@@ -1,7 +1,7 @@
 {
   "name": "topohelper",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "files": [
     "dist"
@@ -19,17 +19,16 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "devDependencies": {
+  "dependencies": {
     "d3-geo": "^3.0.1",
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
     "flatbush": "^4.0.0",
     "point-in-polygon-hao": "^1.1.0",
     "polylabel": "^1.1.0",
-    "proj4": "^2.8.0",
     "topojson-client": "^3.1.0",
     "topojson-server": "^3.0.1",
     "topojson-simplify": "^3.0.3",
-    "vite": "^3.0.9"
+    "vite": "^3.1.3"
   }
 }

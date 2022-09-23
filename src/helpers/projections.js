@@ -1,4 +1,4 @@
-import proj4 from 'proj4'
+// import proj4 from 'proj4'
 import { getBbox } from './bbox'
 
 // Guess if a topojson is on LatLong crs based on bbox
@@ -17,28 +17,28 @@ export function isPlanar (topo) {
     return topo.proj == "+proj=longlat +datum=WGS84" ? false : true
 }
 
-export function getProj (projection, options = {}) {
-    const {from, topo} = options
+// export function getProj (projection, options = {}) {
+//     const {from, topo} = options
     
-    // Already a proj4 function
-    // /!\ attention peut poser problème pour stocker 
-    // la valeur string du proj4 en propriété du topojson
-    if (typeof projection === "function") return projection
+//     // Already a proj4 function
+//     // /!\ attention peut poser problème pour stocker 
+//     // la valeur string du proj4 en propriété du topojson
+//     if (typeof projection === "function") return projection
 
-    // FROM PROJECTION
-    const fromProj = topo.proj 
-                        ? topo.proj
-                        : from
-                            ? from
-                            : null
+//     // FROM PROJECTION
+//     const fromProj = topo.proj 
+//                         ? topo.proj
+//                         : from
+//                             ? from
+//                             : null
 
-    // Proj4 string
-    const proj = fromProj ? proj4(fromProj, projection) : proj4(projection)
+//     // Proj4 string
+//     const proj = fromProj ? proj4(fromProj, projection) : proj4(projection)
 
-    topo.proj = projection
+//     topo.proj = projection
 
-    return proj
-}
+//     return proj
+// }
 
 
 // Non utilisé

@@ -9,7 +9,7 @@ import { merge } from './merge.js'
 import { filter } from './filter.js'
 import { centroids } from './centroids.js'
 import { simplify } from './simplify.js'
-import { project } from './project.js'
+// import { project } from './project.js'
 import { view } from './view.js'
 
 

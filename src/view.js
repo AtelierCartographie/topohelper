@@ -13,8 +13,8 @@ import Flatbush from 'flatbush'
 import { getGeomCoordinates } from './helpers/transform.js'
 
 /**
- * TODO
- * 
+ * Topojson viewer with zoom and tooltip
+ * Can also handle an array of geojson in single function mode
  *
  * @param {TopoJSON|GeoJSON} topo - A topojson object in chain mode or topojson|geojson[] in single function mode
  * @param {Object} options - optional parameters except for name
