@@ -1,7 +1,6 @@
 {
   "name": "topohelper",
   "description": "TopoJSON helper",
-  "private": true,
   "version": "0.1.0",
   "author": "Thomas Ansart",
   "license": "MIT",
