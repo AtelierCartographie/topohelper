@@ -7,9 +7,9 @@ import { quantize } from 'topojson-client'
  * Option to select layers
  *
  * @param {TopoJSON} topo - A valid topojson object
- * @param {Object} options - optional parameters except for name
+ * @param {Object} options - optional parameters
  * @param {String|String[]|Number|Number[]} options.layer - target layers (name or index). If omit or "all" use all layers. Ex: {layer: "lyr"} | {layer: ["lyr", 1]}
- * @param {Boolean|Number} options.q - level of quantization. if true quantization is applied with a 1e4 value.
+ * @param {Boolean|Number} options.q - level of quantization. if true quantization is applied with a value of 1e4.
  * @returns {TopoJSON}
  */
 export function toTopojson (topo, options = {}) {

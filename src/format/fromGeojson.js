@@ -7,8 +7,8 @@ import { isLonLat } from '../helpers/projections.js'
  * Instantiate a topohelper class from a geojson or an array of geojson
  * Before inputs are convert to a single topojson
  *
- * @param {GeoJSON|GeoJSON[]} topo - A valid geojson or an array of geojson
- * @param {Object} options - optional parameters except for name
+ * @param {GeoJSON|GeoJSON[]} geojson - A valid geojson or an array of geojson
+ * @param {Object} options - optional parameters
  * @param {String|String[]} options.name - name of the new layer
  * @returns {topohelper}
  */

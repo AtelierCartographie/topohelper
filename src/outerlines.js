@@ -7,7 +7,7 @@ import { addLastLayerName, getLayerName } from './helpers/layers.js'
  * Return a MultiLineString
  *
  * @param {TopoJSON} topo - A valid topojson object
- * @param {Object} options - optional parameters except for name
+ * @param {Object} options - optional parameters
  * @param {Boolean} options.chain - intern option to know if function is called in chained mode
  * @param {String|Number} options.layer - a single target layer (name or index)
  * @param {String} options.name - name of the new layer

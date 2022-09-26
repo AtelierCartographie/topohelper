@@ -1,7 +1,7 @@
 import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom} from 'd3-zoom'
 import { select, pointer } from 'd3-selection'
-import { toTopojson } from './format/toTopojson.js'
+// import { toTopojson } from './format/toTopojson.js'
 import { simplify } from './simplify.js'
 import { bboxToPolygon } from './helpers/bbox'
 import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
@@ -28,6 +28,7 @@ import { getGeomCoordinates } from './helpers/transform.js'
 export function view(geofile, options = {}) {
     let {chain, layer, zoom, tooltip, size} = options
     const [w,h] = size ?? [document.body.clientWidth, document.body.clientWidth/1.5]
+    zoom = zoom ?? false
     tooltip = tooltip ?? false
 
     // SINGLE FUNCTION MODE

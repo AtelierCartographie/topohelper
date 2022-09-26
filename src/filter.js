@@ -7,7 +7,7 @@ import { getBbox } from './helpers/bbox.js'
  * Filter a topojson
  *
  * @param {TopoJSON} topo - A valid topojson object
- * @param {Object} options - optional parameters except for name
+ * @param {Object} options - optional parameters
  * @param {Boolean} options.chain - intern option to know if function is called in chained mode
  * @param {String|Number} options.layer - a single target layer (name or index)
  * @param {Function} options.condition - condition of filtering as an arraw function
