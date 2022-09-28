@@ -1,3 +1,10 @@
+/**
+ * Retrieve main information about a topojson: bbox, projection and layers list.
+ * For each layer:  name, geometry type, number of objects, properties
+ *
+ * @param {TopoJSON} topo - A valid topojson object
+ * @returns {Object}
+ */
 export function info (topo) {
     const {bbox, proj: projection, objects} = topo
     let layers = Object.keys(objects)

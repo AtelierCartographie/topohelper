@@ -3,7 +3,7 @@ import { getLayerName } from "./helpers/layers"
 
 /**
  * Manipulate properties of a topojson layer with Arquero
- * Point and MultiPoint geometry object are ignore.
+ * Only three arquero verb are available: select, rename and derive
  *
  * @param {TopoJSON} topo - A valid topojson object
  * @param {Object} options - optional parameters
