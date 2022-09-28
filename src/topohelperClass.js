@@ -9,6 +9,8 @@ import { merge } from './merge.js'
 import { filter } from './filter.js'
 import { centroids } from './centroids.js'
 import { simplify } from './simplify.js'
+import { properties } from './properties.js'
+import { info } from './info.js'
 // import { project } from './project.js'
 import { view } from './view.js'
 
@@ -78,11 +80,21 @@ export class topohelper {
       return this
     }
 
-    project(options = {}) {
-      this.topojson = project(this.topojson, {...options, chain: true})
-      this.method.push({project: options})
+    properties(options = {}) {
+      this.topojson = properties(this.topojson, {...options, chain: true})
+      this.method.push({properties: options})
       return this
     }
+
+    info() {
+      return info(this.topojson)
+    }
+
+    // project(options = {}) {
+    //   this.topojson = project(this.topojson, {...options, chain: true})
+    //   this.method.push({project: options})
+    //   return this
+    // }
 
     view(options = {}) {
       return view(this.topojson, {...options, chain: true})
