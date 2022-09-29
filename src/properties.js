@@ -1,5 +1,5 @@
 import * as aq from 'arquero'
-import { getLayerName } from "./helpers/layers"
+import { getLayerName, getLayerProperties } from "./helpers/layers"
 
 /**
  * Manipulate properties of a topojson layer with Arquero
@@ -22,9 +22,10 @@ export function properties (topo, options = {}) {
     delete options.chain
     delete options.layer
     const order = Object.keys(options)
-  
-    // Retrieve properties of the layer as an array of objects
-    const table = topo.objects[layer].geometries.map(d => d.properties)
+
+    // Get properties of the layer, throw error if none
+    const table = getLayerProperties(topo, layer)
+
     // Convert to an arquero table
     let aqTable = aq.from(table)
     
