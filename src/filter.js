@@ -22,7 +22,7 @@ export function filter(topo, options = {}) {
   name = name ?? "filter"
   addLayer = addLayer ?? true
 
-  const throwError = () => new Error ("No condition submit. Ex:  {condition: d => d.properties.pop > 100")
+  const throwError = () => new Error ("No condition submit. Ex:  {condition: d => d.properties.pop > 100}.")
 
   const subset = topo.objects[layer].geometries.filter(condition ? condition : throwError())
 
