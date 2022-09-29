@@ -2,6 +2,7 @@ import { fromTopojson } from './format/fromTopojson.js'
 import { fromGeojson } from './format/fromGeojson.js'
 import { toGeojson } from './format/toGeojson.js'
 import { toTopojson } from './format/toTopojson.js'
+import { toObjects } from './format/toObjects.js'
 import { lines } from './lines.js'
 import { innerlines } from './innerlines.js'
 import { outerlines } from './outerlines.js'
@@ -36,6 +37,10 @@ export class topohelper {
 
     toTopojson(options = {}) {
       return toTopojson(this.topojson, options)
+    }
+
+    toObjects(options = {}) {
+      return toObjects(this.topojson, {...options, chain: true})
     }
   
     lines(options = {}) {
