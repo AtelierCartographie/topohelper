@@ -116,15 +116,19 @@ topohelper.from(topojson_file)
 #### properties(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/properties.js)
 Manipulate properties of a topojson layer with Arquero.   
 Only three arquero verbs are available: select, rename and derive.   
-Manipulation order of the three verbs respect options object order. {select, rename} ≠ {rename, select}
+Manipulation order of the three verbs respect options object order. `{select, rename}` ≠ `{rename, select}`
 + options.**layer** `{String|Number}` - a single target layer (name or index); default: last layer created or first layer on first opeartion
 + options.**select** `{String|String[]}` - Select properties to keep. See [arquero 'select()' docs](https://uwdata.github.io/arquero/api/verbs#select)
 + options.**rename** `{Object}` - Rename some or all properties. ex: `{'oldName': 'newName'}`. See [arquero 'rename()' docs](https://uwdata.github.io/arquero/api/verbs#rename)
-+ options.**derive** `{String|String[]}` - Add or modify properties. See [arquero 'derive()' docs](https://uwdata.github.io/arquero/api/verbs#derive)
++ options.**derive** `{Object}` - Add or modify properties. See [arquero 'derive()' docs](https://uwdata.github.io/arquero/api/verbs#derive)
 
 ```
 topohelper.from(topojson_file)
-          .simplify({level: 0.3})
+          .properties({
+            select: ["ID", "POPULATION"],
+            rename: {ID: "id", POPULATION: "pop"},
+            derive: {pop1000: d => d.pop / 1000}
+          })
 ```
 
 ### Preview
@@ -170,7 +174,5 @@ Export properties of a layer.
 
 ```
 topohelper.from(topojson_file)
-          .innerlines()
-          .centroids({layer: 0})
-          .toGeojson() // export all layers as an array of geojson
+          .toObjects()
 ```

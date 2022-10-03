@@ -1,5 +1,5 @@
 import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
-import { zoom as d3zoom} from 'd3-zoom'
+import { zoom as d3zoom, zoomIdentity} from 'd3-zoom'
 import { select, pointer } from 'd3-selection'
 // import { toTopojson } from './format/toTopojson.js'
 import { simplify } from './simplify.js'
@@ -56,7 +56,15 @@ export function view(geofile, options = {}) {
     const {arcs: lightArcs} = simplify(raw, {level: 0.2})
 
   
-    // CANVAS
+    // HTML STRUCTURE
+    // div #geoviewer
+    // > div #coords        (if tooltip)
+    // > div #propertyPanel (if tooltip)
+    // > button #resetZoom  (if zoom)
+    // > canvas #tooltip    (if tooltip)
+    // > canvas layer 1
+    // > canvas layer 2...
+
     // Define a projection = use geofile as is, no reprojection
     const proj = geoIdentity().reflectY(true).fitSize([w, h], rectBbox)
   
@@ -65,32 +73,119 @@ export function view(geofile, options = {}) {
     geoViewer.id = "geoviewer"
     geoViewer.style.width = w + "px"
     geoViewer.style.height = h + "px"
-    // Create a div to receive pointer coordinates infos
-    const coordsInfo = document.createElement("div")
-    coordsInfo.id = "coords"
-    coordsInfo.style.position = "absolute", coordsInfo.style.zIndex = "1"
-    coordsInfo.style.bottom = "10px", coordsInfo.style.left = "10px"
-    coordsInfo.style.padding = "0 5px"
-    coordsInfo.style.fontFamily = "sans-serif", coordsInfo.style.fontSize = "12px"
-    coordsInfo.style.background = "rgba(255,255,255,0.7)"
-
-    geoViewer.append(coordsInfo)
   
     // couleurs différentes par calques, réutilisées si plus de 6 calques
     const colors = ["#333", "#ff3b00", "#1f77b4", "#2ca02c", "#9467bd", "#8c564b"]
 
-    
 
     // CREATE CANVAS LAYERS AND RENDER LAYERS
     files.forEach((file,i) => {
       file.color = colors[i%6]
       addLayer(geoViewer, file, layer[i])
     })
+
+    // function to 1) create a canvas, 2) draw geometry, 3) add it to a node
+    function addLayer(node, file, layer) {
+      const ctx = newCanvasContext2D(w,h, {id: layer, layered: true})
+      const geoPath = d3geoPath(proj, ctx).pointRadius(1)
+      geometryRender(file, ctx, geoPath, arcs, file.color)
+      node.append(ctx.canvas)
+    }
   
-    if (zoom) addZoom()
+    // -- ZOOM --
+    if (zoom) {
+      // Create a button to reset zoom
+      const buttonReset = document.createElement('button')
+      buttonReset.id = "buttonReset"
+      buttonReset.type = "button"
+      buttonReset.title = "Reset zoom"
+      buttonReset.style.width = "28px", buttonReset.style.height = "28px"
+      buttonReset.style.position = "absolute", buttonReset.style.zIndex = "1"
+      buttonReset.style.top = "10px", buttonReset.style.right = "10px"
+      buttonReset.style.padding = "0", buttonReset.style.border = "1px solid"
+      buttonReset.style.background = "white", buttonReset.style.cursor = "pointer"
+      // SVG icon inside button
+      const buttonIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+      buttonIcon.setAttribute("width", "24")
+      buttonIcon.setAttribute("height", "24")
+      path.setAttribute('d', "M3 21v-6h2v2.6l3.1-3.1 1.4 1.4L6.4 19H9v2Zm12 0v-2h2.6l-3.1-3.1 1.4-1.4 3.1 3.1V15h2v6ZM8.1 9.5 5 6.4V9H3V3h6v2H6.4l3.1 3.1Zm7.8 0-1.4-1.4L17.6 5H15V3h6v6h-2V6.4Z")
+      buttonIcon.appendChild(path)
+      buttonReset.appendChild(buttonIcon)
+
+      geoViewer.append(buttonReset)
+
+
+      // Zoom event on parent div#geoviewer, not on canvas directly
+      function addZoom() {
+        const zoomFn = d3zoom()
+          .scaleExtent([1, 100])
+          .on("zoom", ({transform}) => zoomed(transform, files, lightArcs))
+          .on("end",  ({transform}) => zoomed(transform, files, arcs))
+
+        select(geoViewer).call(zoomFn)
+        
+        select(buttonReset).on("click", () => select(geoViewer).call(zoomFn.transform, zoomIdentity))
+      }
+      
+      // Apply zoom to each canvas of the geoviewer
+      function zoomed(transform, files, arcs) {
+        currentTransform = transform
+        const dpi = devicePixelRatio
+
+        // clear tooltip canvas when pan & zoom
+        if (tooltip) {
+          const cvTooltip = geoViewer.querySelector('canvas#tooltip')
+          cvTooltip.width = cvTooltip.width
+        }
+
+        const allCanvas = [...geoViewer.querySelectorAll('canvas:not(#tooltip)')] // HTMLCollection to array
+        const allGeoPath = allCanvas.map(c => d3geoPath(proj, c.getContext("2d")))
+
+        function rendering(transform, file, context, geoPath) {
+            const {x,y,k} = transform
+            
+            context.canvas.width = context.canvas.width
+        
+            context.save()
+            context.clearRect(0, 0, w, h)
+        
+            // modification de l'état du canvas avec la transformation désirée
+            context.translate(dpi * x, dpi * y)  
+            context.scale(dpi * k, dpi * k)
+        
+            // ajustement pour que l'épaisseur reste en réalité constante visuellement
+            const lineWidth = 0.5 / k
+            
+            geometryRender(file, context, geoPath.pointRadius(1 / k), arcs, file.color, lineWidth)
+        
+            context.restore()
+        }
+
+        allCanvas.forEach( (c,i) => rendering(transform, files[i], c.getContext('2d'), allGeoPath[i]))
+      }
+      
+      addZoom()
+    
+    }
+
+
+
+    // -- TOOLTIP --
     // Save current transform
     let currentTransform = {x: 0, y: 0, k: 1}
     if (tooltip) {
+      // Create a div to receive pointer coordinates infos
+      const coordsInfo = document.createElement("div")
+      coordsInfo.id = "coords"
+      coordsInfo.style.position = "absolute", coordsInfo.style.zIndex = "1"
+      coordsInfo.style.bottom = "10px", coordsInfo.style.left = "10px"
+      coordsInfo.style.padding = "0 5px"
+      coordsInfo.style.fontFamily = "sans-serif", coordsInfo.style.fontSize = "12px"
+      coordsInfo.style.background = "rgba(255,255,255,0.7)"
+
+      geoViewer.append(coordsInfo)
+      
       // Create a div to receive properties infos of geometry hover
       const pInfo = document.createElement("div")
       pInfo.id = "propertyPanel"
@@ -194,69 +289,9 @@ export function view(geofile, options = {}) {
           // hide properties panel
           pInfo.style.display = "none"
         }
-
-        
       }
     }
 
-    
-    
-    // ZOOM
-    // Zoom event on parent div#geoviewer, not on canvas directly
-    function addZoom() {
-      select(geoViewer)
-        .call(d3zoom()
-                .scaleExtent([1, 100])
-                .on("zoom", ({transform}) => zoomed(transform, files, lightArcs))
-                .on("end",  ({transform}) => zoomed(transform, files, arcs))
-             )
-    }
-  
-    // Apply zoom to each canvas of the geoviewer
-    function zoomed(transform, files, arcs) {
-        currentTransform = transform
-        const dpi = devicePixelRatio
-
-        // clear tooltip canvas when pan & zoom
-        if (tooltip) {
-          const cvTooltip = geoViewer.querySelector('canvas#tooltip')
-          cvTooltip.width = cvTooltip.width
-        }
-
-        const allCanvas = [...geoViewer.querySelectorAll('canvas:not(#tooltip)')] // HTMLCollection to array
-        const allGeoPath = allCanvas.map(c => d3geoPath(proj, c.getContext("2d")))
-
-        function rendering(transform, file, context, geoPath) {
-            const {x,y,k} = transform
-            
-            context.canvas.width = context.canvas.width
-        
-            context.save()
-            context.clearRect(0, 0, w, h)
-        
-            // modification de l'état du canvas avec la transformation désirée
-            context.translate(dpi * x, dpi * y)  
-            context.scale(dpi * k, dpi * k)
-        
-            // ajustement pour que l'épaisseur reste en réalité constante visuellement
-            const lineWidth = 0.5 / k
-            
-            geometryRender(file, context, geoPath.pointRadius(1 / k), arcs, file.color, lineWidth)
-        
-            context.restore()
-        }
-
-        allCanvas.forEach( (c,i) => rendering(transform, files[i], c.getContext('2d'), allGeoPath[i]))
-    }
-    
-    // function to 1) create a canvas, 2) draw geometry, 3) add it to a node
-    function addLayer(node, file, layer) {
-      const ctx = newCanvasContext2D(w,h, {id: layer, layered: true})
-      const geoPath = d3geoPath(proj, ctx).pointRadius(1)
-      geometryRender(file, ctx, geoPath, arcs, file.color)
-      node.append(ctx.canvas)
-    }
-  
     return geoViewer  
   }
 
