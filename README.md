@@ -45,13 +45,13 @@ Keep share arcs of adjacent Polygon|MultiPolygon as a single MultiLineString.
 A group by a property can be applied at the same time.   
 Point and MultiPoint geometry object are ignore.
 + options.**layer** `{String|Number}` - a single target layer (name or index); default: last layer created or first layer on first opeartion
-+ options.**group** `{String}` - group by a data property before
++ options.**groupby** `{String}` - group by a data property before
 + options.**name** `{String}` - name of the new layer; default: operation name "innerlines"
 + options.**addLayer** `{Boolean}` - if `true` add a layer to existing ones; default: `true`
 
 ```
 topohelper.from(topojson_file)
-          .innerlines({group: "property_name"})
+          .innerlines({groupby: "property_name"})
 ```
 
 #### outerlines(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/outerlines.js)
@@ -70,13 +70,18 @@ topohelper.from(topojson_file)
 Union all Polygon|MultiPolygon of a layer. Share arcs of adjacent Polygon|MultiPolygon are removed.   
 A group by a property can be applied at the same time.
 + options.**layer** `{String|Number}` - a single target layer (name or index); default: last layer created or first layer on first opeartion
-+ options.**group** `{String}` - group by a data property before
++ options.**groupby** `{String}` - group by a data property before
++ options.**rollup** `{Object}` - aggregate properties in conjunction with the group by. ex: `{newCol1: aq.op.count(), newCol2: d => aq.op.sum(d.pop) / 1000, newCol3: aq.op.mean('pop')}`.See [arquero 'rollup()' docs](https://uwdata.github.io/arquero/api/verbs#rollup)
++ options.**join** `{Object}` - Join left an external table (array of objects or arquero table) after merging geometry. ex: `{'data': 'table', on: 'id', value: 'newCol'}`.See [arquero 'join_left()' docs](https://uwdata.github.io/arquero/api/verbs#join_left)
 + options.**name** `{String}` - name of the new layer; default: operation name "merge"
 + options.**addLayer** `{Boolean}` - if `true` add a layer to existing ones; default: `true`
 
 ```
 topohelper.from(topojson_file)
-          .merge({group: "property_name"})
+          .merge({
+            groupby: "property_name",
+            rollup: {sum: aq.op.sum("property_name")}
+          })
 ```
 
 #### filter(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/filter.js)

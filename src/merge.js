@@ -12,20 +12,20 @@ import { addLastLayerName, getLayerName, getLayerProperties } from './helpers/la
  * @param {Object} options - optional parameters
  * @param {Boolean} options.chain - intern option to know if function is called in chained mode or single function mode
  * @param {String|Number} options.layer - a single target layer (name or index)
- * @param {String} options.group - group by a data properties before
- * @param {Object} options.rollup - aggregate properties in conjunction with the group by. Use rollup arquero verb
+ * @param {String} options.groupby - groupby by a data properties before
+ * @param {Object} options.rollup - aggregate properties in conjunction with the groupby by. Use rollup arquero verb
  * @param {Object} options.join - Join left an external table after merge. Parameter of arquero 'join' verb. ex: {data: table, on: "id", values: "newColumn"}
  * @param {String} options.name - name of the new layer
  * @param {Boolean} options.addLayer - true add a layer to existing ones
  * @returns {TopoJSON}
  */
 export function merge(topo, options = {}) {
-  let {chain, layer, group, rollup, join, name, addLayer} = options
+  let {chain, layer, groupby, rollup, join, name, addLayer} = options
 
   layer = getLayerName(topo, layer, {chain})
-  name = name ?? group ? `merge_groupBy_${group}` : "merge"
+  name = name ?? groupby ? `merge_groupBy_${groupby}` : "merge"
   
-  if (!group) {
+  if (!groupby) {
     const geometries = topoMergeArcs(topo, topo.objects[layer].geometries)
     const output = reconstructTopojson(topo, geometries, {name, addLayer})
 
@@ -38,7 +38,7 @@ export function merge(topo, options = {}) {
   
   // ROLLUP PROPERTIES
   let aqTable = aq.from(getLayerProperties(topo, layer))
-                    .groupby(group)
+                    .groupby(groupby)
                     .rollup(rollup)
 
   // JOIN EXTERNAL TABLE
@@ -50,13 +50,13 @@ export function merge(topo, options = {}) {
   // rollup + join as an array of objects
   const table = aqTable.objects()
 
-  // MERGE GEOMETRY + GROUP BY
-  // list of values of the group variable
-  const groups = aqTable.array(group)
+  // MERGE GEOMETRY + groupby BY
+  // list of values of the groupby variable
+  const groups = aqTable.array(groupby)
 
-  // merge features by group 
+  // merge features by groupby 
   const groupBy_features = groups
-          .map(g => topoMergeArcs(topo, topo.objects[layer].geometries.filter(d => d.properties[group] === g)))
+          .map(g => topoMergeArcs(topo, topo.objects[layer].geometries.filter(d => d.properties[groupby] === g)))
           .map((d,i) => ({...d, properties: table[i]} ))
 
   const output = reconstructTopojson(topo, groupBy_features, {name, collection: true, addLayer})
