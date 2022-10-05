@@ -115,12 +115,13 @@ topohelper.from(topojson_file)
 
 #### properties(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/properties.js)
 Manipulate properties of a topojson layer with Arquero.   
-Only three arquero verbs are available: select, rename and derive.   
+Only four arquero verbs are available: select, rename, derive and join.   
 Manipulation order of the three verbs respect options object order. `{select, rename}` ≠ `{rename, select}`
 + options.**layer** `{String|Number}` - a single target layer (name or index); default: last layer created or first layer on first opeartion
 + options.**select** `{String|String[]}` - Select properties to keep. See [arquero 'select()' docs](https://uwdata.github.io/arquero/api/verbs#select)
 + options.**rename** `{Object}` - Rename some or all properties. ex: `{'oldName': 'newName'}`. See [arquero 'rename()' docs](https://uwdata.github.io/arquero/api/verbs#rename)
 + options.**derive** `{Object}` - Add or modify properties. See [arquero 'derive()' docs](https://uwdata.github.io/arquero/api/verbs#derive)
++ options.**join** `{Object}` - Join left an external table (array of objects or arquero table). ex: `{'data': 'table', on: 'id', value: 'newCol'}`.See [arquero 'join_left()' docs](https://uwdata.github.io/arquero/api/verbs#join_left)
 
 ```
 topohelper.from(topojson_file)
