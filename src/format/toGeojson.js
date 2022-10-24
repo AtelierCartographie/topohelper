@@ -10,7 +10,7 @@ import { getLayersName } from '../helpers/layers.js'
  * @returns {GeoJSON}
  */
 export function toGeojson(topo, options = {}) {
-  let {layer} = options
+  let { layer } = options
   layer = getLayersName(topo, layer)
 
   // Conversion to geojson + add layer name as property
@@ -18,16 +18,18 @@ export function toGeojson(topo, options = {}) {
     const geojson = feature(topo, topo.objects[layer])
 
     if (geojson.type === 'Feature') {
-      return {type: 'FeatureCollection',
-       features: [geojson],
-       name: layer
+      return {
+        type: 'FeatureCollection',
+        features: [geojson],
+        name: layer
       }
     }
 
     geojson.name = layer
+    geojson.proj = topo.proj
     return geojson
   }
-  
+
   return layer.length > 1
     ? layer.map(lyr => convert(lyr))
     : convert(layer)

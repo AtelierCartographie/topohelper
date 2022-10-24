@@ -1,80 +1,57 @@
-// import {transform, untransform, bbox} from 'topojson-client'
-// import {getProj} from './helpers/projections'
+import { bbox } from 'topojson-client'
+import { isPlanar, getProj, projectArcs, projectPointsGeometry } from './helpers/projections'
 
-// export function project (topo, options = {}) {
-//     let {chain, proj, fromProj, geojson} = options
+/**
+ * Project a topojson with proj4.
+ * /!\ Implement a naive approach => No clipping operation is made if topojson geometry intersect projection limit (ex: antimeridian, poles).
+ *
+ * @param {TopoJSON} topo - A valid topojson object
+ * @param {Object} options - optional parameters
+ * @param {Boolean} options.chain - intern option to know if function is called in chained mode
+ * @param {String} options.proj - a proj4 string. Ex: "+proj=robin"
+ * @returns {TopoJSON}
+ */
+export function project(topo, options = {}) {
+    let { chain, proj } = options
 
-//     // No geojson export in chain mode
-//     if (chain && geojson) throw new Error("In chain mode, operations only return topojson. Use toGeojson() instead.")
+    // LOGIC
+    // 1. Check if is unprojected
+    // 2. Get proj from proj4 string or epsg code (need network)
+    // 3. Project arc position
+    // 4. Project Point|MultiPoint if there is
+    // 5. Update bbox
+    // 6. store proj4 string in topo.proj property
 
-//     if (!proj) throw new Error("Missing arguments options.proj")
-//     proj = getProj(proj, {topo, fromProj})
+    if (isPlanar(topo)) throw new Error(`Can't project already projected topojson. Current projection: "${topo.proj}"`)
+    if (!proj) throw new Error("Missing arguments options.proj")
 
-//     const T = transform(topo.transform)
+    const { projString, projFn } = getProj(proj)
 
-//     topo.arcs = getArcsTransform(topo, T, proj) 
+    // Project arcs positions
+    topo.arcs = projectArcs(topo, projFn)
 
-//     // Check if topojson have Point or MultiPoint geometry
-//     // if so coordinates have to be transformed and projected too
-//     const allLyr = Object.keys(topo.objects)
-//     allLyr.forEach(lyr => getPointsTransform(topo.objects[lyr], T, proj))
-  
-//     const box = bbox(topo)
-//     const newTransform = getTransform(box)
-//     const unT = untransform(newTransform)
-  
-//     topo.bbox = box
-//     topo.transform = newTransform
-//     topo.arcs = getArcsTransform(topo, unT) 
+    // Check if topojson have Point or MultiPoint geometry
+    // if so coordinates have to be projected too
+    const allLyr = Object.keys(topo.objects)
+    allLyr.forEach(lyr => projectPointsGeometry(topo.objects[lyr], projFn))
 
-//     allLyr.forEach(lyr => getPointsTransform(topo.objects[lyr], unT))
-    
-//     return topo
-//   }
+    topo.bbox = bbox(topo)
+    topo.proj = projString
 
-// // D'après https://github.com/topojson/topojson-client/blob/master/src/quantize.js#L11
-// function getTransform (bbox, q = 1e4) {
+    return topo
+}
+
+// D'après https://github.com/topojson/topojson-client/blob/master/src/quantize.js#L11
+// function getTransform(bbox, q = 1e4) {
 //     const [x0, y0, x1, y1] = bbox
 
-//     return {scale: [x1 - x0 
-//                     ? (x1 - x0) / (q - 1) 
-//                     : 1,
-//                     y1 - y0 
-//                       ? (y1 - y0) / (q - 1) 
-//                       : 1],
-//             translate: [x0, y0]
-//            }
-// }
-
-// function TransformProjectPoint (point, i, transform, proj) {
-//     const pointTransform = transform(point,i)   // decoding or delta-encoding
-
-//     return proj
-//         ? proj.forward(pointTransform)          // point transform + projected
-//         : pointTransform                        // point transform only
-// }
-
-// function getArcsTransform (topojson, transform, proj) {
-//     return topojson.arcs.map(arc => {
-//         return arc.map((point,i) => TransformProjectPoint(point, i, transform, proj) )
-//     })
-// }
-
-// function getPointsTransform (object, transform, proj) {
-//     switch (object.type) {
-//         case 'GeometryCollection':
-//             object.geometries.forEach(geom => getPointsTransform(geom, transform, proj))
-//             break
-
-//         case 'Point':
-//             object.coordinates = TransformProjectPoint(object.coordinates, 0, transform, proj)
-//             break
-
-//         case 'MultiPoint':
-//             object.coordinates = object.coordinates.map((point, i) => TransformProjectPoint(point, i, transform, proj))
-//             break
-    
-//         default: 
-//             return object
+//     return {
+//         scale: [x1 - x0
+//             ? (x1 - x0) / (q - 1)
+//             : 1,
+//         y1 - y0
+//             ? (y1 - y0) / (q - 1)
+//             : 1],
+//         translate: [x0, y0]
 //     }
 // }

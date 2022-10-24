@@ -137,6 +137,27 @@ topohelper.from(topojson_file)
           })
 ```
 
+#### project(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/project.js)
+Project a non-projected topojson (WGS84) with proj4.
+/!\ This operation implement a naive approach: no clipping operation is made if topojson geometry intersect projection limit (ex: antimeridian, poles).
++ options.**proj** `{String}` - a proj4 string. Ex: "+proj=robin"
+
+```
+topohelper.from(topojson_file)
+          .project({proj: "+proj=robin})
+```
+
+#### unproject(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/unproject.js)
+Unproject a projected topojson to WGS84 with proj4.
+/!\ This operation implement a naive approach: no clipping operation is made if topojson geometry intersect projection limit (ex: antimeridian, poles).
++ options.**from** `{String}` - origin projection as a proj4 string. Ex: "+proj=robin"
+
+```
+topohelper.from(topojson_file)
+          .project({proj: "+proj=robin})
+          .unproject()
+```
+
 ### Preview
 #### view(options) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/view.js)
 Preview a topojson in Canvas. Zoom and tooltip are built in as option.   
