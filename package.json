@@ -1,6 +1,6 @@
 {
   "name": "topohelper",
-  "description": "TopoJSON helper",
+  "description": "TopoJSON helper help you manipulate topoJSON files with ease",
   "version": "0.4.0",
   "author": "Thomas Ansart",
   "license": "MIT",
