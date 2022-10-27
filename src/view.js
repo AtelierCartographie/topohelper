@@ -1,13 +1,10 @@
 import { geoIdentity, geoPath as d3geoPath } from 'd3-geo'
 import { zoom as d3zoom, zoomIdentity } from 'd3-zoom'
 import { select, pointer } from 'd3-selection'
-// import { toTopojson } from './format/toTopojson.js'
 import { simplify } from './simplify.js'
 import { bboxToPolygon } from './helpers/bbox'
 import { newCanvasContext2D, geometryRender } from './helpers/canvas.js'
 import { getlastLayerName, getLayersName } from './helpers/layers.js'
-import { fromTopojson } from './format/fromTopojson.js'
-import { fromGeojson } from './format/fromGeojson.js'
 import { meshArcs } from 'topojson-client'
 import Flatbush from 'flatbush'
 import { getGeomCoordinates } from './helpers/transform.js'
@@ -30,14 +27,6 @@ export function view(geofile, options = {}) {
   const [w, h] = size ?? [document.body.clientWidth, document.body.clientWidth / 1.5]
   zoom = zoom ?? false
   tooltip = tooltip ?? false
-
-  // SINGLE FUNCTION MODE
-  // Convert topojson or geojson|geojson[] into topohelper topojson
-  if (chain !== true) {
-    geofile = (!Array.isArray(geofile) && geofile.type === "Topology")
-      ? fromTopojson(geofile).topojson
-      : fromGeojson(geofile)
-  }
 
   // In chain mode + {layer: "last"}, always render the last layer created
   if (chain && layer === "last") layer = getlastLayerName(geofile, Object.keys(geofile.objects))
