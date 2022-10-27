@@ -21,7 +21,8 @@ export function toGeojson(topo, options = {}) {
       return {
         type: 'FeatureCollection',
         features: [geojson],
-        name: layer
+        name: layer,
+        proj: topo.proj
       }
     }
 
