@@ -8,13 +8,16 @@ import { isLonLat } from '../helpers/projections.js'
  * Before a deep copy of the topojson is made
  *
  * @param {TopoJSON} topo - A valid single topojson object
+ * @param {Boolean} options.deep - create a deep copy of the topojson. Default is false.
  * @returns {topohelper}
  */
-export function fromTopojson(topo) {
+export function fromTopojson(topo, options = {}) {
+    let { deep } = options
+    deep = deep ?? false
     if (Array.isArray(topo)) throw new Error("Expect only a single topojson.")
 
-    // const copy = JSON.parse(JSON.stringify(topo))
-    const copy = structuredClone(topo)
+    // deep copy of the topojson ?
+    const copy = (deep) ? structuredClone(topo) : topo
     // get and add a bbox property
     copy.bbox = getBbox(copy)
     // Guess if projected or unprojected coordinates
@@ -22,6 +25,6 @@ export function fromTopojson(topo) {
 
     // decode arcs and Point|MultiPoint
     if (copy.transform !== undefined) return new topohelper(decodeTopo(copy))
-    
+
     return new topohelper(copy)
 }

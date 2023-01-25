@@ -42,6 +42,7 @@ To build and develop topohelper locally:
 #### from(topojson) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/format/fromTopojson.js)
 Instantiate a topohelper class of a topojson.   
 Before a deep copy of the topojson is made.
++ options.**deep** `{Boolean}` - create a deep copy of the topojson. Default is false.
 ```js
 topohelper.from(topojson_file)
 ```
