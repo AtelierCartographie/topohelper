@@ -41,7 +41,7 @@ To build and develop topohelper locally:
 ### Import geofile (topojson or geojson)
 #### from(topojson) - [source](https://github.com/AtelierCartographie/topohelper/blob/main/src/format/fromTopojson.js)
 Instantiate a topohelper class of a topojson.   
-Before a deep copy of the topojson is made.
+A deep copy of the topojson can be made.
 + options.**deep** `{Boolean}` - create a deep copy of the topojson. Default is false.
 ```js
 topohelper.from(topojson_file)

@@ -5,7 +5,7 @@ import { isLonLat } from '../helpers/projections.js'
 
 /**
  * Instantiate a topohelper class of a topojson
- * Before a deep copy of the topojson is made
+ * A deep copy of the topojson can be made.
  *
  * @param {TopoJSON} topo - A valid single topojson object
  * @param {Boolean} options.deep - create a deep copy of the topojson. Default is false.
