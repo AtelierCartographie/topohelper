@@ -1,8 +1,8 @@
 import { getLayerName } from "./helpers/layers";
 
 /**
- * Manipulate properties of a topojson layer with Arquero
- * Only four arquero verb are available: select, rename, derive and join
+ * Manipulate properties of a topojson layer
+ * Four types of operations are available: select, rename, derive and join.
  *
  * @param {TopoJSON} topo - A valid topojson object
  * @param {Object} options - optional parameters

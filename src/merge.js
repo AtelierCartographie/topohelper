@@ -38,7 +38,7 @@ export function merge(topo, options = {}) {
   const groupby_features = [];
   groupby_map.forEach((value, key) => {
     const features = topoMergeArcs(topo, value);
-    groupby_features.push({ ...features, properties: { groupby: key } });
+    groupby_features.push({ ...features, properties: { [groupby]: key } });
   });
 
   const output = reconstructTopojson(topo, groupby_features, {
