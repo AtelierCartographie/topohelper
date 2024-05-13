@@ -1,18 +1,19 @@
 {
+  "type": "module",
   "name": "topohelper",
   "description": "TopoJSON helper help you manipulate topoJSON files with ease",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "author": "Thomas Ansart",
   "license": "MIT",
   "files": [
     "dist"
   ],
-  "main": "./dist/topohelper.umd.js",
-  "module": "./dist/topohelper.mjs",
+  "main": "./dist/topohelper.umd.cjs",
+  "module": "./dist/topohelper.js",
   "exports": {
     ".": {
-      "import": "./dist/topohelper.mjs",
-      "require": "./dist/topohelper.umd.js"
+      "import": "./dist/topohelper.js",
+      "require": "./dist/topohelper.umd.cjs"
     }
   },
   "repository": {
@@ -25,14 +26,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "arquero": "^5.1.0",
     "d3-geo": "^3.1.0",
     "d3-selection": "^3.0.0",
     "d3-zoom": "^3.0.0",
     "flatbush": "^4.0.0",
     "point-in-polygon-hao": "^1.1.0",
     "polylabel": "^1.1.0",
-    "proj4": "^2.8.1",
     "topojson-client": "^3.1.0",
     "topojson-server": "^3.0.1",
     "topojson-simplify": "^3.0.3"

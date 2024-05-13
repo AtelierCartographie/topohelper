@@ -1,61 +1,63 @@
 export function addLastLayerName(topo, name) {
-    topo.lastLayer = name
+  topo.lastLayer = name;
 }
 
 export function getlastLayerName(topo, keys) {
-    return topo.lastLayer === undefined
-        ? keys[0]
-        : topo.lastLayer
+  return topo.lastLayer === undefined ? keys[0] : topo.lastLayer;
 }
 
 // TODO handle multiple layers name return for export function toGeojson() and toTopojson()
 export const getLayerName = (topo, layer, options = {}) => {
-    let {chain} = options
+  let { chain } = options;
 
-    // Array of layers name
-    const keys = Object.keys(topo.objects)
-    
-    // In chain mode, use last layer
-    if (chain && layer === undefined) return getlastLayerName(topo, keys)
+  // Array of layers name
+  const keys = Object.keys(topo.objects);
 
-    // if no options.layer and don't need all layers, use first layer
-    if (layer === undefined) return keys[0]
+  // In chain mode, use last layer
+  if (chain && layer === undefined) return getlastLayerName(topo, keys);
 
-    // if a valid index (integer + less than index length)
-    if (Number.isInteger(layer) && layer >= 0 && layer <= keys.length) return keys[layer]
+  // if no options.layer and don't need all layers, use first layer
+  if (layer === undefined) return keys[0];
 
-    // if a layer name that exist
-    if (keys.includes(layer)) return layer
+  // if a valid index (integer + less than index length)
+  if (Number.isInteger(layer) && layer >= 0 && layer <= keys.length)
+    return keys[layer];
 
-    throw new Error("Not an existing layer name or index")
-  }
+  // if a layer name that exist
+  if (keys.includes(layer)) return layer;
 
-export function getLayersName (topo, layers) {
-    // Return all layers if no parameters
-    if (layers === undefined || layers === "all") return Object.keys(topo.objects)
+  throw new Error("Not an existing layer name or index");
+};
 
-    return Array.isArray(layers)
-        ? layers.map(lyr => getLayerName(topo, lyr))
-        // return a single layer inside an array or not
-        : [getLayerName(topo, layers)]
+export function getLayersName(topo, layers) {
+  // Return all layers if no parameters
+  if (layers === undefined || layers === "all")
+    return Object.keys(topo.objects);
+
+  return Array.isArray(layers)
+    ? layers.map((lyr) => getLayerName(topo, lyr))
+    : // return a single layer inside an array or not
+      [getLayerName(topo, layers)];
 }
 
-export function getLayerProperties (topo, layer) {
-    // Layer object
-    const object = topo.objects[layer]
-    // GeometryCollection or single geometry ?
-    const isGeomColl = object.type === "GeometryCollection" ? true : false
-    // Has properties ?
-    const hasProperties = isGeomColl 
-        ? object.geometries[0].hasOwnProperty('properties') && object.geometries[0].properties !== undefined
-        : object.hasOwnProperty('properties') && object.properties !== undefined
+export function getLayerProperties(topo, layer) {
+  // Layer object
+  const object = topo.objects[layer];
+  // GeometryCollection or single geometry ?
+  const isGeomColl = object.type === "GeometryCollection" ? true : false;
+  // Has properties ?
+  const hasProperties = isGeomColl
+    ? object.geometries[0].hasOwnProperty("properties") &&
+      object.geometries[0].properties !== undefined
+    : object.hasOwnProperty("properties") && object.properties !== undefined;
 
-    let table
-    // Retrieve properties of the layer as an array of objects or an object
-    if (!hasProperties) throw new Error(`No properties in layer "${layer}"`)
+  let table;
+  // Retrieve properties of the layer as an array of objects or an object
+  if (!hasProperties) throw new Error(`No properties in layer "${layer}"`);
 
-    if (isGeomColl && hasProperties) table = topo.objects[layer].geometries.map(d => d.properties)
-    if (!isGeomColl && hasProperties) table = topo.objects[layer].properties
+  if (isGeomColl && hasProperties)
+    table = object.geometries.map((d) => d.properties);
+  if (!isGeomColl && hasProperties) table = object.properties;
 
-    return table
+  return table;
 }
