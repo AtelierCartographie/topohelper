@@ -2,7 +2,7 @@
   "type": "module",
   "name": "topohelper",
   "description": "TopoJSON helper help you manipulate topoJSON files with ease",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "author": "Thomas Ansart",
   "license": "MIT",
   "files": [
